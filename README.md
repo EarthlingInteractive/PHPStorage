@@ -36,4 +36,8 @@ Principles:
 - JSO form: Standard form for JSON REST services.
   Values will usually be the same as those in schema form,
   but keys will be 'camelCase' instead of 'plain english'.
+  - "JSO" is not a typo.  Objects in this form are the objects that
+    would be JSON-encoded without JSON encoding yet applied, hence no
+    'N'.
   - 'id' field is added to objects that have composite keys.
+  
