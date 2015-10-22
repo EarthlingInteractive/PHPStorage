@@ -1,0 +1,8 @@
+{
+    "dbname": "phpstoragetest",
+    "host": "localhost",
+    "user": "phpstoragetest",
+    "password": "phpstoragetest",
+    "driver": "pdo_pgsql",
+    "charset": "UTF-8"
+}

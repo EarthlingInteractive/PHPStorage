@@ -1,0 +1,23 @@
+{
+	"name": "earthit/php-storage",
+	"description": "PHP Storage",
+	"license": "MIT",
+	"require-dev": {
+		"earthit/php-project-utils": "^0.0.12",
+		"phpunit/phpunit": "~3.7",
+		"togos/tpfetcher": "^0.0.7"
+	},
+	"require": {
+		"php": "^5.4"
+	},
+	"autoload": {
+		"psr-0": {
+			"EarthIT_Storage_": "test/"
+		}
+	},
+	"autoload-dev": {
+		"psr-0": {
+			"EarthIT_Storage_": "lib/"
+		}
+	}
+}
