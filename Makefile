@@ -91,9 +91,14 @@ create-database drop-database: %: test/db-scripts/%.sql
 empty-database: test/db-scripts/empty-database.sql util/phpstoragetest-psql
 	util/phpstoragetest-psql <"$<"
 
-upgrade-database: test/db-scripts/create-schema.sql test/db-scripts/create-tables.sql util/phpstoragetest-psql
-	util/phpstoragetest-psql <test/db-scripts/create-schema.sql
-	util/phpstoragetest-psql <test/db-scripts/create-tables.sql
+upgrade-database: \
+		test/db-scripts/drop-schema.sql \
+		test/db-scripts/create-schema.sql \
+		test/db-scripts/create-tables.sql \
+		util/phpstoragetest-psql
+	util/phpstoragetest-psql -v ON_ERROR_STOP=1 <test/db-scripts/drop-schema.sql
+	util/phpstoragetest-psql -v ON_ERROR_STOP=1 <test/db-scripts/create-schema.sql
+	util/phpstoragetest-psql -v ON_ERROR_STOP=1 <test/db-scripts/create-tables.sql
 
 rebuild-database: empty-database upgrade-database
 
