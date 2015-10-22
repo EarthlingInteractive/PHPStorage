@@ -4,7 +4,24 @@
 
 A data access layer.
 
-Principles:
+Goals:
+
+- Glean schema information from a EarthIT_Schema object.
+
+- Provide a consistent API for fetching from and storing into a
+  database or databases.
+
+- Objects passed in and out are in 'schema form'; transformations
+  to database form are done by the storage layer.
+
+- Allow custom storage layers to do additional transformations.
+
+Design principles:
+
+- Excplicitly state which representations of objects are used where,
+  rather than relying on coincidental similarities between them.
+  - e.g. a function that takes an object should indicate in its
+    documentation which form that object should be in.
 
 - Data is separate from the plumbing.  Data objects are just arrays
   (or, conceivably, scalar values.  But usually arrays).
@@ -12,6 +29,8 @@ Principles:
 - Backend agnostic.  May be RDB.  May be something else entirely.
 
 - Allow efficient access to collections of objects of the same type.
+  - Functions should generally be written to operate on collections to
+    amortize overhead costs.
 
 - Should be able to use query generation and object conversion utilities
   independently.
@@ -43,4 +62,4 @@ Principles:
     would be JSON-encoded without JSON encoding yet applied, hence no
     'N'.
   - 'id' field is added to objects that have composite keys.
-  
+  - Transforming to/from this form is out of the scope of this library.
