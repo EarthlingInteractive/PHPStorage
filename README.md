@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/EarthlingInteractive/PHPStorage.svg)](https://travis-ci.org/EarthlingInteractive/PHPStorage)
+
 # PHP Storage
 
 A data access layer.
