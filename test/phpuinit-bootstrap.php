@@ -102,5 +102,5 @@ spl_autoload_register('eit_autoload_converted');
 // Make a global variable for cases where
 // we don't control how the output of this script is used,
 // e.g. PHPUnit tests.
-$EarthIT_Storage_TestRegistry = new EarthIT_Storage_TestRegistry( __DIR__.'/config' );
+$EarthIT_Storage_TestRegistry = new EarthIT_Storage_TestRegistry( __DIR__ );
 return $EarthIT_Storage_TestRegistry;

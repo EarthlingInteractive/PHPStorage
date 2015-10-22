@@ -4,11 +4,14 @@
 	"license": "MIT",
 	"require-dev": {
 		"earthit/php-project-utils": "^0.0.12",
+		"earthit/php-common": "^1.1.0",
 		"phpunit/phpunit": "~3.7",
 		"togos/tpfetcher": "^0.0.7"
 	},
 	"require": {
-		"php": ">=5.4"
+		"php": ">=5.4",
+		"doctrine/dbal": "^2.4",
+		"earthit/dbc": "^1.1.1"
 	},
 	"autoload": {
 		"psr-0": {
