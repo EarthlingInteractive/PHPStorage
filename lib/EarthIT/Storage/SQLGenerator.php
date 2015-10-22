@@ -11,13 +11,13 @@ interface EarthIT_Storage_SQLGenerator
 	 * @return array of EarthIT_DBC_SQLExpressions; all but the last will be doQueried.
 	 *   The last one will be fetchRowed to get DB-external-form column values for the inserted item.
 	 */
-	public function makeBulkInserts( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter );
+	public function makeSingleInsertWithResult( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter );
 	
 	/**
 	 * @param array $filters array of ItemFilters
-	 * @return EarthIT_DBC_SQLExpression representing the 'WHERE ....' part of the query
+	 * @return EarthIT_DBC_SQLExpression representing the <x> in 'WHERE <x>' part of the query
 	 */
-	public function makeWhereClause( array $filters, EarthIT_Schema_ResourceClass $rc, &$paramCounter );
+	public function makeFilterSql( array $filters, EarthIT_Schema_ResourceClass $rc, $alias, &$paramCounter );
 	
 	/**
 	 * @param array $filters array of ItemFilters

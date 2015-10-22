@@ -43,20 +43,16 @@ class EarthIT_Storage_TestRegistry
 	}
 		
 	public function loadSchema($name='') {
-		return require EarthIT_Storage_ROOT_DIR.'/schema/'.($name?$name.'.':'').'schema.php';
+		return require EarthIT_Storage_ROOT_DIR.'/test/schema.php';
 	}
 
 	public function loadSqlRunner() {
 		return new EarthIT_DBC_DoctrineSQLRunner($this->dbAdapter);
 	}
-
-	public function loadStorageHelper() {
-		return new EarthIT_Storage_NormalStorageHelper($this);
-	}
 	
-	protected function loadStorage() {
-		return new EarthIT_CMIPREST_PostgresStorage(
-			$this->dbAdapter, $this->schema, $this->dbNamer );
+	protected function loadPostgresStorage() {
+		return new EarthIT_Storage_PostgresStorage(
+			$this->schema, $this->sqlRunner, $this->dbNamer );
 	}
 	
 	protected function loadRester() {

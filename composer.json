@@ -1,10 +1,11 @@
 {
-	"name": "earthit/php-storage",
+	"name": "earthit/storage",
 	"description": "PHP Storage",
 	"license": "MIT",
 	"require-dev": {
 		"earthit/php-project-utils": "^0.0.12",
 		"earthit/php-common": "^1.1.0",
+		"earthit/schema": "^1.0.1",
 		"phpunit/phpunit": "~3.7",
 		"togos/tpfetcher": "^0.0.7"
 	},
