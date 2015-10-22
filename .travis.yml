@@ -9,4 +9,4 @@ php:
   - hhvm
   - nightly
 
-script: make run-unit-tests
+script: make create-database run-unit-tests drop-database
