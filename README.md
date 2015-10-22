@@ -6,7 +6,8 @@ A data access layer.
 
 Principles:
 
-- Data is separate from the plumbing.  Data objects are just arrays.
+- Data is separate from the plumbing.  Data objects are just arrays
+  (or, conceivably, scalar values.  But usually arrays).
 
 - Backend agnostic.  May be RDB.  May be something else entirely.
 
