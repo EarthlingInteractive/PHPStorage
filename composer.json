@@ -9,7 +9,7 @@
 		"togos/tpfetcher": "^0.0.7"
 	},
 	"require": {
-		"php": ">=5.4",
+		"php": ">=5.3",
 		"doctrine/dbal": "^2.4",
 		"earthit/dbc": "^1.1.1"
 	},
