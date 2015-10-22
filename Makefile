@@ -51,7 +51,7 @@ clean:
 	rm -rf ${generated_resources}
 
 vendor: composer.json
-	rm composer.lock
+	rm -f composer.lock
 	composer install
 	touch "$@"
 
