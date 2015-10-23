@@ -1,5 +1,6 @@
 <?php
 
+/** @api */
 interface EarthIT_Storage_ItemFetcher
 {
 	/**
@@ -7,9 +8,8 @@ interface EarthIT_Storage_ItemFetcher
 	 *
 	 * @param array $filters array of EarthIT_Storage_ItemFilter
 	 *   (these are effectively ANDed together)
-	 * @param string $classUri 'long name' of the class of object that you're fetching
-	 *   e.g. "http://ns.example.com/Data/WaffleSquare"
+	 * @param EarthIT_Schema_ResourceClass $rc class of object that you're fetching
 	 * @return array of items, keyed by stringified primary key
 	 */ 
-	public function getItems( array $filters, $classUri );
+	public function getItems( array $filters, EarthIT_Schema_ResourceClass $rc );
 }

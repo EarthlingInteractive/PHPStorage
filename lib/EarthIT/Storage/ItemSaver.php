@@ -1,13 +1,13 @@
 <?php
 
-interface EarthIT_Storage_ItemShover
+/** @api */
+interface EarthIT_Storage_ItemSaver
 {
 	/**
 	 * Store a bunch of data.
 	 * 
 	 * @param array $itemData list of arrays of item data ('schema form') to be stored
-	 * @param string $classUri 'long name' of the class of object that you're inserting
-	 *   e.g. "http://ns.example.com/Data/WaffleSquare"
+	 * @param EarthIT_Schema_ResourceClass $rc class of object that you're saving
 	 * @param boolean 
 	 * @param array $options = [
 	 *   'returnStored' => true|false (default = false) ; if true, will return the items 
@@ -17,5 +17,5 @@ interface EarthIT_Storage_ItemShover
 	 * @return array|null the items as inserted into the database, maintaining keys, or null if
 	 *   options.returnStored was false
 	 */
-	public function shoveItems(array $itemData, $classUri, array $options=array());
+	public function saveItems(array $itemData, EarthIT_Schema_ResourceClass $rc, array $options=array());
 }
