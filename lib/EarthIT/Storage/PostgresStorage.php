@@ -7,7 +7,7 @@ class EarthIT_Storage_PostgresStorage extends EarthIT_Storage_SQLStorage
 		EarthIT_DBC_SQLRunner $sqlRunner,
 		EarthIT_DBC_Namer $dbObjectNamer
 	) {
-		parent::__construct($schema, $sqlRunner, $dbObjectNamer, new EarthIT_Storage_PostgresSQLGenerator());
+		parent::__construct($schema, $sqlRunner, $dbObjectNamer, new EarthIT_Storage_PostgresSQLGenerator($dbObjectNamer));
 	}
 	
 	public function dbToPhpValue( $value, EarthIT_Schema_DataType $t ) {

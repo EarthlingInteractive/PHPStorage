@@ -38,7 +38,7 @@ class EarthIT_Storage_TestRegistry
 		return Doctrine_DBAL_DriverManager::getConnection( $this->getConfig('dbc') );
 	}
 	
-	public function loadDbNamer() {
+	public function loadDbObjectNamer() {
 		return new EarthIT_DBC_OverridableNamer(new EarthIT_DBC_PostgresNamer());
 	}
 		
@@ -52,7 +52,7 @@ class EarthIT_Storage_TestRegistry
 	
 	protected function loadPostgresStorage() {
 		return new EarthIT_Storage_PostgresStorage(
-			$this->schema, $this->sqlRunner, $this->dbNamer );
+			$this->schema, $this->sqlRunner, $this->dbObjectNamer );
 	}
 	
 	protected function loadRester() {
