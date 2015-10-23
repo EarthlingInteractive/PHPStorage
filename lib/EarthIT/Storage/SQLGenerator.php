@@ -3,15 +3,20 @@
 interface EarthIT_Storage_SQLGenerator
 {
 	/**
-	 * @return array of EarthIT_DBC_SQLExpressions to be doQueried.
+	 * @param rows list of array(column name => DB-external value, ...)
+	 * @param EarthIT_Schema_ResourceClass $rc class of items fetched
+	 * @return array of schema-form items
 	 */
-	public function makeBulkInserts( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter );
+	public function dbExternalToSchemaItems( array $rows, EarthIT_Schema_ResourceClass $rc );
 	
 	/**
-	 * @return array of EarthIT_DBC_SQLExpressions; all but the last will be doQueried.
-	 *   The last one will be fetchRowed to get DB-external-form column values for the inserted item.
+	 * @param array $itemData list of schema-form items' data
+	 * @param EarthIT_Schema_ResourceClass $rc class of items being inserted
+	 * @param array $options same as $options parameter to ItemSaver#saveItems
+	 * @throws EarthIT_Storage_SaveOptionsUnsupported if the option/data combination isn't supported
+	 * @return array of EarthIT_DBC_SQLExpressions to be doQueried.
 	 */
-	public function makeSingleInsertWithResult( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter );
+	public function makeBulkSaveQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter, array $options=array() );
 	
 	/**
 	 * @param array $filters array of ItemFilters

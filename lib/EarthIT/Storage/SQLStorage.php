@@ -389,20 +389,22 @@ class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_S
 	public function saveItems(array $itemData, EarthIT_Schema_ResourceClass $rc, array $options=array()) {
 		EarthIT_Storage_Util::defaultSaveItemsOptions($options);
 		
-		if( $options['returnStored'] === false and (
-			$options['onDuplicateKey'] === 'error' or
-			$options['onDuplicateKey'] === 'undefined'
-		) ) {
-			// Then we can do a simple bulk insert!
-			$counter = 0;
-			$sqlExpressions = $this->sqlGenerator->makeBulkInserts( $itemData, $rc, $counter );
-			foreach( $sqlExpressions as $expr ) {
-				list($sql,$params) = EarthIT_DBC_SQLExpressionUtil::templateAndParamValues($expr);
-				$this->sqlRunner->doQuery($sql, $params);
-			}
-			return;
+		$counter = 0;
+		$expressions = $this->sqlGenerator->makeBulkSaveQueries( $itemData, $rc, $counter, $options );
+		
+		// Split off the final expression to be treated differently
+		// if returnSaved is true:
+		$fetchExpression = $options['returnSaved'] ? array_pop($expressions) : null;
+		
+		foreach( $expressions as $expr ) {
+			list($sql,$params) = EarthIT_DBC_SQLExpressionUtil::templateAndParamValues($expr);
+			$this->sqlRunner->doQuery($sql, $params);
 		}
 		
-		throw new Exception(get_class($this)."#".__FUNCTION__." not yet implemented for ".json_encode($options));
+		if( $fetchExpression !== null ) {
+			list($sql,$params) = EarthIT_DBC_SQLExpressionUtil::templateAndParamValues($fetchExpression);
+			$savedRows = $this->sqlRunner->fetchRows($sql, $params);
+			return $this->sqlGenerator->dbExternalToSchemaItems($savedRows, $rc);
+		}
 	}
 }

@@ -56,8 +56,10 @@ Design principles:
   Keys correspond exactly to column names.
 
 - Schema form: form as described in schema.txt.
-  - JSON fields are decoded
-  - keys are 'plain english' field names.
+  
+  JSON fields are decoded
+  
+  keys are 'plain english' field names.
 
 - JSO form:
   
