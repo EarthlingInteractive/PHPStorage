@@ -59,9 +59,9 @@ class EarthIT_Storage_StorageHelper extends EarthIT_Storage_Component
 	protected function allocateEntityIds($count) {
 		$this->entityIdPool = array_merge($this->entityIdPool, $this->queryValueSet(
 			"SELECT nextval({seq}) AS id\n".
-			"FROM generate_series(1,{count})", [
+			"FROM generate_series(1,{count})", array(
 				'count'=>$count, 'seq'=>'storagetest.newentityid'
-			]));
+			)));
 	}
 	
 	protected function finishPreallocatingEntityIds() {
