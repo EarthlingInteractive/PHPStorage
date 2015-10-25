@@ -14,7 +14,7 @@ interface EarthIT_Storage_SQLGenerator
 	 * @param EarthIT_Schema_ResourceClass $rc class of items being inserted
 	 * @param array $options same as $options parameter to ItemSaver#saveItems
 	 * @throws EarthIT_Storage_SaveOptionsUnsupported if the option/data combination isn't supported
-	 * @return array of EarthIT_DBC_SQLExpressions to be doQueried.
+	 * @return array of EarthIT_Storage_StorageQueries to be doQueried/fetchRowsed.
 	 */
 	public function makeBulkSaveQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter, array $options=array() );
 	

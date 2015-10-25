@@ -264,7 +264,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 				")\n".
 				"SELECT * FROM los_updatos UNION ALL SELECT * FROM los_insertsos";
 			
-			$queries[] = EarthIT_DBC_SQLExpressionUtil::expression($sql, $rowParams);
+			$queries[] = new EarthIT_Storage_StorageQuery($sql, $rowParams, $options['returnSaved']);
 		}
 		return $queries;
 	}
@@ -323,7 +323,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		
 		$params['table'] = EarthIT_DBC_SQLExpressionUtil::tableExpression($rc, $this->dbObjectNamer);
 		
-		return array( EarthIT_DBC_SQLExpressionUtil::expression($sql, $params) );
+		return array( new EarthIT_Storage_StorageQuery($sql, $params, $returnSaved) );
 	}
 	
 	/**

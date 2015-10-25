@@ -390,24 +390,21 @@ class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_S
 		EarthIT_Storage_Util::defaultSaveItemsOptions($options);
 		
 		$counter = 0;
-		$expressions = $this->sqlGenerator->makeBulkSaveQueries( $itemData, $rc, $counter, $options );
+		$queries = $this->sqlGenerator->makeBulkSaveQueries( $itemData, $rc, $counter, $options );
 		
-		// Split off the final expression to be treated differently
-		// if returnSaved is true:
-		$fetchExpression = $options['returnSaved'] && count($expressions) ? array_pop($expressions) : null;
+		$resultRows = array();
 		
-		foreach( $expressions as $expr ) {
-			list($sql,$params) = EarthIT_DBC_SQLExpressionUtil::templateAndParamValues($expr);
-			$this->sqlRunner->doQuery($sql, $params);
+		foreach( $queries as $q ) {
+			list($sql,$params) = EarthIT_DBC_SQLExpressionUtil::templateAndParamValues($q);
+			if( $q->returnsStuff() ) {
+				$resultRows = array_merge($resultRows, $this->sqlRunner->fetchRows($sql, $params));
+			} else {
+				$this->sqlRunner->doQuery($sql, $params);
+			}
 		}
 		
-		if( $fetchExpression !== null ) {
-			list($sql,$params) = EarthIT_DBC_SQLExpressionUtil::templateAndParamValues($fetchExpression);
-			$savedRows = $this->sqlRunner->fetchRows($sql, $params);
-			return $this->sqlGenerator->dbExternalToSchemaItems($savedRows, $rc);
-		} else if( $options['returnSaved'] ) {
-			// Nothing to fetch because nothing saved?
-			return array();
+		if( $options['returnSaved'] ) {
+			return $this->sqlGenerator->dbExternalToSchemaItems($resultRows, $rc);
 		}
 	}
 }
