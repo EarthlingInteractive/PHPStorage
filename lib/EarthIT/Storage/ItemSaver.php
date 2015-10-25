@@ -14,8 +14,11 @@ interface EarthIT_Storage_ItemSaver
 	 *     (any default field values filled in or changed by the database, etc)
 	 *   'onDuplicateKey' => 'undefined|error|skip|replace|update' (default = 'error')
 	 * ]
-	 * @return array|null the items as inserted into the database, maintaining keys, or null if
-	 *   options.returnSaved was false
+	 * @return array|null the items as inserted into the database,
+	 *   or null if options.returnSaved was false.
+	 *   Keys of returned array have no meaning and don't necessarily
+	 *   correspond to keys of the input array, though they may happen
+	 *   to match for certain backends.
 	 */
 	public function saveItems(array $itemData, EarthIT_Schema_ResourceClass $rc, array $options=array());
 }
