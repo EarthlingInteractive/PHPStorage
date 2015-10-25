@@ -116,13 +116,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		return $storedFields;
 	}
 	
-	/**
-	 * @return array of EarthIT_DBC_SQLExpressions to be doQueried; the
-	 *   last will be fetchAlled if options.returnSaved is true
-	 */
-	public function makeBulkSaveQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter, array $options=array() ) {
-		if( count($itemData) == 0 ) return array();
-		
+	protected function _bulkInsertQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter, $returnSaved ) {
 		$storableFields = EarthIT_Storage_Util::storableFields($rc);
 		$fieldsToStore = self::ensureSameFieldsGivenForAllItems( $itemData, $storableFields);
 		
@@ -160,7 +154,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 			"(".implode(", ", $toStoreColumnNamePlaceholders).") VALUES\n".
 			implode(",\n", $valueRows);
 		
-		if( $options['returnSaved'] ) {
+		if( $returnSaved ) {
 			$columnDbExternalValueSqls = array();
 			foreach( $storableFields as $fn=>$f ) {
 				$t = $this->dbInternalToExternalValueSql($f, $rc, $columnNamePlaceholders[$fn]);
@@ -176,11 +170,20 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 	}
 	
 	/**
-	 * @return array of EarthIT_DBC_SQLExpressions; all but the last will be doQueried.
-	 *   The last one will be fetchRowed to get DB-external-form column values for the inserted item.
+	 * @return array of EarthIT_DBC_SQLExpressions to be doQueried; the
+	 *   last will be fetchAlled if options.returnSaved is true
 	 */
-	public function makeSingleInsertWithResult( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter ) {
-		throw new Exception(get_class($this)."#".__FUNCTION__." not yet implemented.");
+	public function makeBulkSaveQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter, array $options=array() ) {
+		if( count($itemData) == 0 ) return array();
+		
+		EarthIT_Storage_Util::defaultSaveItemsOptions($options);
+		
+		switch( $options['onDuplicateKey'] ) {
+		case 'error': case 'undefined':
+			return $this->_bulkInsertQueries($itemData, $rc, $paramCounter, $options['returnSaved']);
+		default:
+			throw new EarthIT_Storage_SaveOptionsUnsupported(get_class($this).'#'.__FUNCTION__." doesn't support onDuplicateKey={$options['onDuplicateKey']}");
+		}
 	}
 	
 	/**
