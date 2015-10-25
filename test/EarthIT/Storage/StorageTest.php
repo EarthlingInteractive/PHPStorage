@@ -56,10 +56,10 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		), $userRc, array('returnSaved'=>true));
 		
 		$userId = null;
-		foreach( $newUsers as $newUser ) {
+		foreach( $newUsers as &$newUser ) {
 			$userId = $newUser['ID'];
 			$newUser['username'] = 'Bob Dole';
-		}
+		}; unset($newUser);
 		
 		$this->registry->postgresStorage->saveItems(
 			$newUsers, $userRc,
