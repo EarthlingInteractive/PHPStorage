@@ -99,7 +99,9 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		foreach( $itemData as $item ) {
 			$row = array();
 			foreach( $fields as $fn=>$f ) {
-				$row[$fieldColumnNames[$fn]] = $this->schemaToDbExternalValue($item[$fn], $f, $rc);
+				if( array_key_exists($fn, $item) ) {
+					$row[$fieldColumnNames[$fn]] = $this->schemaToDbExternalValue($item[$fn], $f, $rc);
+				}
 			}
 			$rows[] = $row;
 		}
@@ -177,14 +179,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		default:
 			throw new Exception($options['onDuplicateKey'].'?');
 		}
-		
-		if( $resetUnspecifiedFieldValues ) {
-			foreach( $itemData as &$item ) {
-				$item += $this->defaultFieldValues($rc);
-			}; unset($item);
-			// TODO: Do we need to null out other fields, too?
-		}
-		
+
 		$rows = $this->schemaToDbExternalItems( $itemData, $rc );
 		
 		$storableFields = EarthIT_Storage_Util::storableFields($rc);
@@ -214,8 +209,14 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		$pkFields = array();
 		foreach( $rc->getPrimaryKey()->getFieldNames() as $fn ) {
 			if( !isset($storableFields[$fn]) ) throw new Exception($rc->getName()." PK field '$fn' not storable!  Can't generate an update query.");
-			$pkFields[] = $storableFields[$fn];
+			$pkFields[$fn] = $storableFields[$fn];
 			$pkColumnNames[] = $fieldColumnNames[$fn];
+		}
+		
+		$nonPkColumnNames = array();
+		foreach( $storableFields as $fn=>$f ) {
+			if( isset($pkFields[$fn]) ) continue;
+			$nonPkColumnNames[] = $fieldColumnNames[$fn];
 		}
 		
 		$params['table'] = EarthIT_DBC_SQLExpressionUtil::tableExpression($rc, $this->dbObjectNamer);
@@ -244,6 +245,15 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 			
 			$conditions = self::encodeColumnValuePairs($pkColumnValues, $columnParamNames, $columnValueParamNames);
 			$sets       = self::encodeColumnValuePairs($row           , $columnParamNames, $columnValueParamNames);
+			
+			if( $resetUnspecifiedFieldValues ) {
+				// Default everything else!
+				foreach( $nonPkColumnNames as $columnName ) {
+					if( !array_key_exists($columnName, $row) ) {
+						$sets[] = "{{$columnParamNames[$columnName]}} = DEFAULT";
+					}
+				}
+			}
 			
 			$resultSelectSql = implode(', ',$outputColumnValueSqls);
 			$sql =

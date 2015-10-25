@@ -88,4 +88,40 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 			), $user );
 		}
 	}
+	
+	public function testReplaceWithReturn() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		$newUsers = $this->registry->postgresStorage->saveItems( array(
+			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
+			array('username' => 'Bob Jones', 'passhash' => 'asd125'),
+		), $userRc, array('returnSaved'=>true));
+		
+		$newUsers = self::keyById($newUsers);
+		
+		foreach( $newUsers as &$newUser ) {
+			$newUser['username'] = 'Bob Dole';
+			unset($newUser['passhash']);
+		}; unset($newUser);
+		
+		// Update everyone to be named "Bob Dole"
+		// but keep their existing passhash (and, of course, ID)
+		$replacedUsers = $this->registry->postgresStorage->saveItems(
+			$newUsers, $userRc,
+			array('returnSaved'=>true, 'onDuplicateKey'=>'replace')
+		);
+		
+		$replacedUsers = self::keyById($replacedUsers);
+		
+		$this->assertEquals(2, count($replacedUsers));
+		
+		foreach( $replacedUsers as $user ) {
+			$this->assertEquals( array(
+				'ID' => $user['ID'],
+				'username' => 'Bob Dole',
+				'passhash' => null,
+				'e-mail address' => null
+			), $user );
+		}
+	}
 }
