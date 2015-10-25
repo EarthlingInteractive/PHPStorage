@@ -403,7 +403,7 @@ class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_S
 			}
 		}
 		
-		if( $options['returnSaved'] ) {
+		if( $options[EarthIT_Storage_ItemSaver::RETURN_SAVED] ) {
 			return $this->sqlGenerator->dbExternalToSchemaItems($resultRows, $rc);
 		}
 	}

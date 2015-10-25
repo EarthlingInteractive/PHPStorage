@@ -29,7 +29,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$newUsers = $this->registry->postgresStorage->saveItems( array(
 			array('ID' => $entityId0, 'username' => 'Bob Hope', 'passhash' => 'asd123'),
 			array('ID' => $entityId1, 'username' => 'Bob Jones', 'passhash' => 'asd125'),
-		), $userRc, array('returnSaved'=>true));
+		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true));
 		
 		$this->assertEquals( 2, count($newUsers) );
 	}
@@ -40,7 +40,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$newUsers = $this->registry->postgresStorage->saveItems( array(
 			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
 			array('username' => 'Bob Jones', 'passhash' => 'asd125'),
-		), $userRc, array('returnSaved'=>true));
+		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true));
 		
 		$this->assertEquals( 2, count($newUsers) );
 		foreach( $newUsers as $newUser ) {
@@ -60,7 +60,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$newUsers = $this->registry->postgresStorage->saveItems( array(
 			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
 			array('username' => 'Bob Jones', 'passhash' => 'asd125'),
-		), $userRc, array('returnSaved'=>true));
+		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true));
 		
 		$newUsers = self::keyById($newUsers);
 		
@@ -72,7 +72,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		// but keep their existing passhash (and, of course, ID)
 		$updatedUsers = $this->registry->postgresStorage->saveItems(
 			$newUsers, $userRc,
-			array('returnSaved'=>true, 'onDuplicateKey'=>EarthIT_Storage_ItemSaver::ODK_UPDATE)
+			array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true, EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY=>EarthIT_Storage_ItemSaver::ODK_UPDATE)
 		);
 		
 		$updatedUsers = self::keyById($updatedUsers);
@@ -95,7 +95,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$newUsers = $this->registry->postgresStorage->saveItems( array(
 			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
 			array('username' => 'Bob Jones', 'passhash' => 'asd125'),
-		), $userRc, array('returnSaved'=>true));
+		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true));
 		
 		$newUsers = self::keyById($newUsers);
 		
@@ -108,7 +108,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		// but keep their existing passhash (and, of course, ID)
 		$replacedUsers = $this->registry->postgresStorage->saveItems(
 			$newUsers, $userRc,
-			array('returnSaved'=>true, 'onDuplicateKey'=>EarthIT_Storage_ItemSaver::ODK_REPLACE)
+			array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true, EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY=>EarthIT_Storage_ItemSaver::ODK_REPLACE)
 		);
 		
 		$replacedUsers = self::keyById($replacedUsers);
@@ -125,13 +125,13 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		}
 	}
 	
-	public function testInsertSkipWithReturn() {
+	public function testInsertKeepWithReturn() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
 		$newUsers = $this->registry->postgresStorage->saveItems( array(
 			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
 			array('username' => 'Bob Jones', 'passhash' => 'asd125'),
-		), $userRc, array('returnSaved'=>true));
+		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true));
 		
 		$newUsers = self::keyById($newUsers);
 		
@@ -143,7 +143,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		
 		$replacedUsers = $this->registry->postgresStorage->saveItems(
 			$updates, $userRc,
-			array('returnSaved'=>true, 'onDuplicateKey'=>EarthIT_Storage_ItemSaver::ODK_KEEP)
+			array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true, EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY=>EarthIT_Storage_ItemSaver::ODK_KEEP)
 		);
 		
 		$replacedUsers = self::keyById($replacedUsers);

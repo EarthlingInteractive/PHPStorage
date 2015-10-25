@@ -163,7 +163,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 	}
 
 	protected function _bulkPatchyQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter, array $options ) {
-		switch( $options['onDuplicateKey'] ) {
+		switch( $options[EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY] ) {
 		case EarthIT_Storage_ItemSaver::ODK_KEEP:
 			$doUpdate = false;
 			$resetUnspecifiedFieldValues = true;
@@ -177,7 +177,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 			$resetUnspecifiedFieldValues = false;
 			break;
 		default:
-			throw new Exception($options['onDuplicateKey'].'?');
+			throw new Exception($options[EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY].'?');
 		}
 
 		$rows = $this->schemaToDbExternalItems( $itemData, $rc );
@@ -277,7 +277,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 				")\n".
 				"SELECT * FROM los_updatos UNION ALL SELECT * FROM los_insertsos";
 			
-			$queries[] = new EarthIT_Storage_StorageQuery($sql, $rowParams, $options['returnSaved']);
+			$queries[] = new EarthIT_Storage_StorageQuery($sql, $rowParams, $options[EarthIT_Storage_ItemSaver::RETURN_SAVED]);
 		}
 		return $queries;
 	}
@@ -348,9 +348,9 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		
 		EarthIT_Storage_Util::defaultSaveItemsOptions($options);
 		
-		switch( $options['onDuplicateKey'] ) {
+		switch( $options[EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY] ) {
 		case EarthIT_Storage_ItemSaver::ODK_ERROR: case EarthIT_Storage_ItemSaver::ODK_UNDEFINED:
-			return $this->_bulkInsertQueries($itemData, $rc, $paramCounter, $options['returnSaved']);
+			return $this->_bulkInsertQueries($itemData, $rc, $paramCounter, $options[EarthIT_Storage_ItemSaver::RETURN_SAVED]);
 		default:
 			return $this->_bulkPatchyQueries($itemData, $rc, $paramCounter, $options);
 		}

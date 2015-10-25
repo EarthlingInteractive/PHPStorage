@@ -3,6 +3,9 @@
 /** @api */
 interface EarthIT_Storage_ItemSaver
 {
+	const RETURN_SAVED = 'returnSaved';
+	const ON_DUPLICATE_KEY = 'onDuplicateKey';
+	
 	const ODK_KEEP = 'keep';
 	const ODK_UPDATE = 'update';
 	const ODK_REPLACE = 'replace';

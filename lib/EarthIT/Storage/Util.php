@@ -3,8 +3,8 @@
 class EarthIT_Storage_Util
 {
 	public static function defaultSaveItemsOptions(array &$options) {
-		if( !isset($options['returnSaved']) ) $options['returnSaved'] = false;
-		if( !isset($options['onDuplicateKey']) ) $options['onDuplicateKey'] = 'error';
+		if( !isset($options[EarthIT_Storage_ItemSaver::RETURN_SAVED]) ) $options[EarthIT_Storage_ItemSaver::RETURN_SAVED] = false;
+		if( !isset($options[EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY]) ) $options[EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY] = 'error';
 	}
 
 	/**
