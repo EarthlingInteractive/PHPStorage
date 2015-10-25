@@ -47,4 +47,32 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 			$this->assertTrue( isset($newUser['ID']), "Database-defaulted ID field should have a value." );
 		}
 	}
+	
+	public function testSingleUpsertWithReturn() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		$newUsers = $this->registry->postgresStorage->saveItems( array(
+			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
+		), $userRc, array('returnSaved'=>true));
+		
+		$userId = null;
+		foreach( $newUsers as $newUser ) {
+			$userId = $newUser['ID'];
+			$newUser['username'] = 'Bob Dole';
+		}
+		
+		$this->registry->postgresStorage->saveItems(
+			$newUsers, $userRc,
+			array('returnSaved'=>true, 'onDuplicateKey'=>'update')
+		);
+		
+		foreach( $newUsers as $newUser ) {
+			$this->assertEquals( array(
+				'ID' => $userId,
+				'username' => 'Bob Dole',
+				'passhash' => 'asd123',
+				'e-mail address' => null
+			), $newUser );
+		}
+	}
 }
