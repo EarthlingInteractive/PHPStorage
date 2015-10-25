@@ -162,17 +162,17 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		return $defs;
 	}
 
-	protected function _bulkPatchQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter, array $options ) {
+	protected function _bulkPatchyQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter, array $options ) {
 		switch( $options['onDuplicateKey'] ) {
-		case 'skip':
+		case EarthIT_Storage_ItemSaver::ODK_KEEP:
 			$doUpdate = false;
 			$resetUnspecifiedFieldValues = true;
 			break;
-		case 'replace':
+		case EarthIT_Storage_ItemSaver::ODK_REPLACE:
 			$doUpdate = true;
 			$resetUnspecifiedFieldValues = true;
 			break;
-		case 'update':
+		case EarthIT_Storage_ItemSaver::ODK_UPDATE:
 			$doUpdate = true;
 			$resetUnspecifiedFieldValues = false;
 			break;
@@ -349,12 +349,10 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		EarthIT_Storage_Util::defaultSaveItemsOptions($options);
 		
 		switch( $options['onDuplicateKey'] ) {
-		case 'error': case 'undefined':
+		case EarthIT_Storage_ItemSaver::ODK_ERROR: case EarthIT_Storage_ItemSaver::ODK_UNDEFINED:
 			return $this->_bulkInsertQueries($itemData, $rc, $paramCounter, $options['returnSaved']);
-		case 'update': case 'replace': case 'skip':
-			return $this->_bulkPatchQueries($itemData, $rc, $paramCounter, $options);
 		default:
-			throw new EarthIT_Storage_SaveOptionsUnsupported(get_class($this).'#'.__FUNCTION__." doesn't support onDuplicateKey={$options['onDuplicateKey']}");
+			return $this->_bulkPatchyQueries($itemData, $rc, $paramCounter, $options);
 		}
 	}
 	

@@ -3,6 +3,12 @@
 /** @api */
 interface EarthIT_Storage_ItemSaver
 {
+	const ODK_KEEP = 'keep';
+	const ODK_UPDATE = 'update';
+	const ODK_REPLACE = 'replace';
+	const ODK_ERROR = 'error';
+	const ODK_UNDEFINED = 'undefined';
+
 	/**
 	 * Store a bunch of data.
 	 * 
@@ -12,7 +18,8 @@ interface EarthIT_Storage_ItemSaver
 	 * @param array $options = [
 	 *   'returnSaved' => true|false (default = false) ; if true, will return the items as they were saved
 	 *     (any default field values filled in or changed by the database, etc)
-	 *   'onDuplicateKey' => 'undefined|error|skip|replace|update' (default = 'error')
+	 *   'onDuplicateKey' => 'undefined|error|keep|replace|update' (default = 'error')
+	 *     (use the ODK_* constants)
 	 * ]
 	 * @return array|null the items as inserted into the database,
 	 *   or null if options.returnSaved was false.

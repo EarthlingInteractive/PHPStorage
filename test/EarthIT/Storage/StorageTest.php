@@ -72,7 +72,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		// but keep their existing passhash (and, of course, ID)
 		$updatedUsers = $this->registry->postgresStorage->saveItems(
 			$newUsers, $userRc,
-			array('returnSaved'=>true, 'onDuplicateKey'=>'update')
+			array('returnSaved'=>true, 'onDuplicateKey'=>EarthIT_Storage_ItemSaver::ODK_UPDATE)
 		);
 		
 		$updatedUsers = self::keyById($updatedUsers);
@@ -108,7 +108,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		// but keep their existing passhash (and, of course, ID)
 		$replacedUsers = $this->registry->postgresStorage->saveItems(
 			$newUsers, $userRc,
-			array('returnSaved'=>true, 'onDuplicateKey'=>'replace')
+			array('returnSaved'=>true, 'onDuplicateKey'=>EarthIT_Storage_ItemSaver::ODK_REPLACE)
 		);
 		
 		$replacedUsers = self::keyById($replacedUsers);
@@ -143,7 +143,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		
 		$replacedUsers = $this->registry->postgresStorage->saveItems(
 			$updates, $userRc,
-			array('returnSaved'=>true, 'onDuplicateKey'=>'skip')
+			array('returnSaved'=>true, 'onDuplicateKey'=>EarthIT_Storage_ItemSaver::ODK_KEEP)
 		);
 		
 		$replacedUsers = self::keyById($replacedUsers);
