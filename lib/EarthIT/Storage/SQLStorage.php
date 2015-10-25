@@ -394,7 +394,7 @@ class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_S
 		
 		// Split off the final expression to be treated differently
 		// if returnSaved is true:
-		$fetchExpression = $options['returnSaved'] ? array_pop($expressions) : null;
+		$fetchExpression = $options['returnSaved'] && count($expressions) ? array_pop($expressions) : null;
 		
 		foreach( $expressions as $expr ) {
 			list($sql,$params) = EarthIT_DBC_SQLExpressionUtil::templateAndParamValues($expr);
@@ -405,6 +405,9 @@ class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_S
 			list($sql,$params) = EarthIT_DBC_SQLExpressionUtil::templateAndParamValues($fetchExpression);
 			$savedRows = $this->sqlRunner->fetchRows($sql, $params);
 			return $this->sqlGenerator->dbExternalToSchemaItems($savedRows, $rc);
+		} else if( $options['returnSaved'] ) {
+			// Nothing to fetch because nothing saved?
+			return array();
 		}
 	}
 }
