@@ -11,8 +11,8 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$oldUserCount = $this->registry->storageHelper->queryValue("SELECT COUNT(*) FROM storagetest.user");
 		
 		$this->registry->postgresStorage->saveItems( array(
-			array('ID' => $entityId0, 'username' => 'Bob Hope', 'password' => 'asd123'),
-			array('ID' => $entityId1, 'username' => 'Bob Jones', 'password' => 'asd125'),
+			array('ID' => $entityId0, 'username' => 'Bob Hope', 'passhash' => 'asd123'),
+			array('ID' => $entityId1, 'username' => 'Bob Jones', 'passhash' => 'asd125'),
 		), $userRc);
 		
 		$newUserCount = $this->registry->storageHelper->queryValue("SELECT COUNT(*) FROM storagetest.user");
@@ -27,8 +27,8 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
 		$newUsers = $this->registry->postgresStorage->saveItems( array(
-			array('ID' => $entityId0, 'username' => 'Bob Hope', 'password' => 'asd123'),
-			array('ID' => $entityId1, 'username' => 'Bob Jones', 'password' => 'asd125'),
+			array('ID' => $entityId0, 'username' => 'Bob Hope', 'passhash' => 'asd123'),
+			array('ID' => $entityId1, 'username' => 'Bob Jones', 'passhash' => 'asd125'),
 		), $userRc, array('returnSaved'=>true));
 		
 		$this->assertEquals( 2, count($newUsers) );
@@ -38,8 +38,8 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
 		$newUsers = $this->registry->postgresStorage->saveItems( array(
-			array('username' => 'Bob Hope', 'password' => 'asd123'),
-			array('username' => 'Bob Jones', 'password' => 'asd125'),
+			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
+			array('username' => 'Bob Jones', 'passhash' => 'asd125'),
 		), $userRc, array('returnSaved'=>true));
 		
 		$this->assertEquals( 2, count($newUsers) );
