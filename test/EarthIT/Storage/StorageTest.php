@@ -48,31 +48,44 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		}
 	}
 	
-	public function testSingleUpsertWithReturn() {
+	protected static function keyById(array $things) {
+		$keyed = array();
+		foreach( $things as $t ) $keyed[$t['ID']] = $t;
+		return $keyed;
+	}
+	
+	public function testUpsertWithReturn() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
 		$newUsers = $this->registry->postgresStorage->saveItems( array(
 			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
+			array('username' => 'Bob Jones', 'passhash' => 'asd125'),
 		), $userRc, array('returnSaved'=>true));
 		
-		$userId = null;
+		$newUsers = self::keyById($newUsers);
+		
 		foreach( $newUsers as &$newUser ) {
-			$userId = $newUser['ID'];
 			$newUser['username'] = 'Bob Dole';
 		}; unset($newUser);
 		
-		$this->registry->postgresStorage->saveItems(
+		// Update everyone to be named "Bob Dole"
+		// but keep their existing passhash (and, of course, ID)
+		$updatedUsers = $this->registry->postgresStorage->saveItems(
 			$newUsers, $userRc,
 			array('returnSaved'=>true, 'onDuplicateKey'=>'update')
 		);
 		
-		foreach( $newUsers as $newUser ) {
+		$updatedUsers = self::keyById($updatedUsers);
+		
+		$this->assertEquals(2, count($updatedUsers));
+		
+		foreach( $updatedUsers as $user ) {
 			$this->assertEquals( array(
-				'ID' => $userId,
+				'ID' => $user['ID'],
 				'username' => 'Bob Dole',
-				'passhash' => 'asd123',
+				'passhash' => $newUsers[$user['ID']]['passhash'],
 				'e-mail address' => null
-			), $newUser );
+			), $user );
 		}
 	}
 }

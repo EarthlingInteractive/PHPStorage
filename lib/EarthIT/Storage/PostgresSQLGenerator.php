@@ -186,10 +186,6 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		}
 		
 		$rows = $this->schemaToDbExternalItems( $itemData, $rc );
-		if( count($itemData) != 1 and $options['returnStored'] ) {
-			throw new EarthIT_Storage_SaveOptionsUnsupported(
-				"Can't generate returning update queries for any number of items other than 1 (given ".count($itemData).")");
-		}
 		
 		$storableFields = EarthIT_Storage_Util::storableFields($rc);
 
