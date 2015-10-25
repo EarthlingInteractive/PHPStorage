@@ -124,4 +124,31 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 			), $user );
 		}
 	}
+	
+	public function testInsertSkipWithReturn() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		$newUsers = $this->registry->postgresStorage->saveItems( array(
+			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
+			array('username' => 'Bob Jones', 'passhash' => 'asd125'),
+		), $userRc, array('returnSaved'=>true));
+		
+		$newUsers = self::keyById($newUsers);
+		
+		$updates = array();
+		foreach( $newUsers as $id=>$newUser ) {
+			$updates[$id] = array('username'=>'Bob Saget') + $newUser;
+			$newUser['username'] = 'Bob Dole';
+		}
+		
+		$replacedUsers = $this->registry->postgresStorage->saveItems(
+			$updates, $userRc,
+			array('returnSaved'=>true, 'onDuplicateKey'=>'skip')
+		);
+		
+		$replacedUsers = self::keyById($replacedUsers);
+		
+		// Nothing should have been updated.
+		$this->assertEquals($newUsers, $replacedUsers);
+	}
 }

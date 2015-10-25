@@ -165,15 +165,15 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 	protected function _bulkPatchQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter, array $options ) {
 		switch( $options['onDuplicateKey'] ) {
 		case 'skip':
-			$update = false;
+			$doUpdate = false;
 			$resetUnspecifiedFieldValues = true;
 			break;
 		case 'replace':
-			$update = true;
+			$doUpdate = true;
 			$resetUnspecifiedFieldValues = true;
 			break;
 		case 'update':
-			$update = true;
+			$doUpdate = true;
 			$resetUnspecifiedFieldValues = false;
 			break;
 		default:
@@ -256,12 +256,19 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 			}
 			
 			$resultSelectSql = implode(', ',$outputColumnValueSqls);
+
+			$updateyPart = $doUpdate ?
+				"UPDATE {table} SET\n".
+				"\t".implode(",\n\t\t",$sets)."\n".
+				"WHERE ".implode("\n\t  AND",$conditions)."\n".
+				"RETURNING {$resultSelectSql}" :
+				"SELECT {$resultSelectSql}\n".
+				"FROM {table}\n".
+				"WHERE ".implode("\n\t  AND",$conditions);
+
 			$sql =
 				"WITH los_updatos AS (\n".
-				"\t"."UPDATE {table} SET\n".
-				"\t\t".implode(",\n\t\t",$sets)."\n".
-				"\t"."WHERE ".implode("\n\t  AND",$conditions)."\n".
-				"\t"."RETURNING {$resultSelectSql}\n".
+				"\t".str_replace("\n","\n\t",$updateyPart)."\n".
 				"), los_insertsos AS (\n".
 				"\t"."INSERT INTO {table} (".implode(", ",$rowInsertColumnSqls).")\n".
 				"\t"."SELECT ".implode(", ",$rowInsertValueSqls)."\n".
