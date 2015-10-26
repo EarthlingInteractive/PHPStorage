@@ -51,8 +51,9 @@ class EarthIT_Storage_TestRegistry
 	}
 	
 	protected function loadPostgresStorage() {
-		return new EarthIT_Storage_PostgresStorage(
-			$this->schema, $this->sqlRunner, $this->dbObjectNamer );
+		return new EarthIT_Storage_SQLStorage(
+			$this->schema, $this->sqlRunner, $this->dbObjectNamer,
+			new EarthIT_Storage_PostgresSQLGenerator($this->dbObjectNamer));
 	}
 	
 	protected function loadRester() {
