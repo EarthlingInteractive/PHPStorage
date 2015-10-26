@@ -1,7 +1,8 @@
 <?php
 
 // TODO: Replace with generic SQL-backed storage, taking a separate object to generate queries
-class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_Storage_ItemFetcher
+/** @unstable */ 
+class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_Storage_ItemFetcher, EarthIT_Storage_ItemDeleter
 {
 	protected $schema;
 	protected $sqlRunner;
@@ -381,7 +382,12 @@ class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_S
 	////
 	
 	/** @override */
-	public function getItems( array $filters, EarthIT_Schema_ResourceClass $rc ) {
+	public function getItems( EarthIT_Schema_ResourceClass $rc, array $filters, array $orderBy, $offset, $limit, array $options ) {
+		throw new Exception(get_class($this)."#".__FUNCTION__." not yet implemented.");
+	}
+	
+	/** @override */
+	public function deleteItems( EarthIT_Schema_ResourceClass $rc, array $filters ) {
 		throw new Exception(get_class($this)."#".__FUNCTION__." not yet implemented.");
 	}
 	
