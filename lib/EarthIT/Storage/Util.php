@@ -32,4 +32,20 @@ class EarthIT_Storage_Util
 	public static function storableFields( EarthIT_Schema_ResourceClass $rc ) {
 		return self::fieldsWithProperty($rc->getFields(), EarthIT_Storage_NS::HAS_A_DATABASE_COLUMN, true, false);
 	}
+	
+	/**
+	 * @param array $selects array of alias => expression
+	 * @return array of select parts [x, y, ...] of 'SELECT x, y, ... FROM yaddah yaddah'
+	 */
+	public static function formatSelects( array $selects, &$paramCounter=0, array &$params ) {
+		$sqlz = array();
+		foreach( $selects as $k=>$sel ) {
+			$exprParamName = "e_".$paramCounter++;
+			$params[$exprParamName] = $sel;
+			$aliasParamName = "a_".$paramCounter++;
+			$params[$aliasParamName] = new EarthIT_DBC_SQLIdentifier($k);
+			$sqlz[] = "{{$exprParamName}} AS {{$aliasParamName}}";
+		}
+		return $sqlz;
+	}
 }

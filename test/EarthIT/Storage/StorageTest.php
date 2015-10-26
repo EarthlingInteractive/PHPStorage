@@ -151,4 +151,43 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		// Nothing should have been updated.
 		$this->assertEquals($newUsers, $replacedUsers);
 	}
+	
+	public function testGetItems() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		// BALEET THEM ALL!
+		$this->registry->postgresStorage->deleteItems( $userRc, array() );
+		
+		// And now there should be ZERO USERS!
+		$fetchedUsers = $this->registry->postgresStorage->itemSearch(new EarthIT_Storage_Search($userRc), array());
+		$this->assertEquals(0, count($fetchedUsers));
+		
+		$newUsers = $this->registry->postgresStorage->saveItems( array(
+			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
+			array('username' => 'Bob Jones', 'passhash' => 'asd125'),
+		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true));
+		
+		$newUsers = self::keyById($newUsers);
+		
+		// So now there should be TOO USERS returned when we GET THEM ALL!
+		$fetchedUsers = $this->registry->postgresStorage->itemSearch(new EarthIT_Storage_Search($userRc), array());
+		$this->assertEquals(2, count($fetchedUsers));
+		
+		$updates = array();
+		foreach( $newUsers as $id=>$newUser ) {
+			$updates[$id] = array('username'=>'Bob Saget') + $newUser;
+			$newUser['username'] = 'Bob Dole';
+		}
+		
+		$replacedUsers = $this->registry->postgresStorage->saveItems(
+			$updates, $userRc,
+			array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true, EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY=>EarthIT_Storage_ItemSaver::ODK_KEEP)
+		);
+		
+		$replacedUsers = self::keyById($replacedUsers);
+		
+		// Nothing should have been updated.
+		$this->assertEquals($newUsers, $replacedUsers);
+		
+	}
 }

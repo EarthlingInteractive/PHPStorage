@@ -19,9 +19,21 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 	) {
 		$this->dbObjectNamer = $dbObjectNamer;
 	}
-
-	//// DB external <-> DB internal value SQL mapping
 	
+	/**
+	 * Return an EarthIT_DBC_SQLExpression that identifies the table.
+	 */
+	public function rcTableExpression( EarthIT_Schema_ResourceClass $rc ) {
+		$components = array();
+		foreach( $rc->getDbNamespacePath() as $ns ) {
+			$components[] = new EarthIT_DBC_SQLIdentifier($ns);
+		}
+		$components[] = new EarthIT_DBC_SQLIdentifier($this->dbObjectNamer->getTableName($rc));
+		return new EarthIT_DBC_SQLNamespacePath($components);
+	}
+	
+	//// DB external <-> DB internal value SQL mapping
+		
 	/**
 	 * Return SQL that will decode the db-internal value $dbInternalValueSql to
 	 * its external form that we can make sense of, e.g. for use in SELECTs
@@ -82,7 +94,10 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		foreach( $rows as $row ) {
 			$item = array();
 			foreach( $fields as $fn=>$f ) {
-				$item[$fn] = $this->dbExternalToSchemaValue($row[$fieldColumnNames[$fn]], $f, $rc);
+				$columnName = $fieldColumnNames[$fn];
+				if( array_key_exists($columnName,$row) ) {
+					$item[$fn] = $this->dbExternalToSchemaValue($row[$columnName], $f, $rc);
+				}
 			}
 			$itemData[] = $item;
 		}
@@ -361,22 +376,49 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 	 * @return EarthIT_DBC_SQLExpression representing the <x> in 'WHERE <x>' part of the query
 	 */
 	public function makeFilterSql( array $filters, EarthIT_Schema_ResourceClass $rc, $alias, &$paramCounter ) {
+		if( count($filters) == 0 ) return EarthIT_DBC_SQLExpressionUtil::expression("TRUE");
+		
 		throw new Exception(get_class($this)."#".__FUNCTION__." not yet implemented.");
 	}
 	
-	/**
-	 * @param array $filters array of ItemFilters
-	 * @return EarthIT_DBC_SQLExpression
-	 */
-	public function makeSearch( array $filters, $offset, $limit, EarthIT_Schema_ResourceClass $rc, &$paramCounter ) {
-		throw new Exception(get_class($this)."#".__FUNCTION__." not yet implemented.");
+	public function makeSearchQuery( EarthIT_Storage_Search $search, array $options=array() ) {
+		$paramCounter = 0;
+		$params = array();
+		$params['table']  = $this->rcTableExpression($search->resourceClass);
+		$params['conditions'] = $this->makeFilterSql($search->filters, $search->resourceClass, 'stuff', $paramCounter);
+		
+		// TODO: only select certain fields if fieldsOfInterest given
+		$selects = $this->makeDbExternalSelects($search->resourceClass->getFields(), $search->resourceClass, 'stuff', $paramCounter, $params);
+		$selectSqls = EarthIT_Storage_Util::formatSelects($selects, $paramCounter, $params);
+		if( count($selectSqls) == 0 ) {
+			throw new Exception("Can't select zero stuff.");
+		}
+		
+		$orderByStuff = "";
+		if( $search->orderBy ) throw new Exception("Doesn't support orderBy yet");
+		
+		$limitStuff = "";
+		if( $search->skip != 0 ) throw new Exception("Doesn't support skip yet");
+		if( $search->limit != 0 ) throw new Exception("Doesn't support limit yet");
+		
+		return EarthIT_DBC_SQLExpressionUtil::expression(
+			"SELECT\n\t".implode(",\n\t", $selectSqls)."\n".
+			"FROM {table} AS stuff\n".
+			"WHERE {conditions}\n".
+			$orderByStuff.
+			$limitStuff,
+			$params
+		);
 	}
 	
-	/**
-	 * @return EarthIT_DBC_SQLExpression to be used as <x> in SELECT <x>
-	 *   to get the DB-external-form value for the given field.
-	 */
-	public function makeSelectValue( EarthIT_Schema_Field $f, EarthIT_Schema_ResourceClass $rc ) {
-		throw new Exception(get_class($this)."#".__FUNCTION__." not yet implemented.");
+	public function makeDbExternalSelects( array $fields, EarthIT_Schema_ResourceClass $rc, $tableSql, &$paramCounter, array &$params ) {
+		$z = array();
+		foreach( $fields as $f ) {
+			$columnName = $this->dbObjectNamer->getColumnName($rc, $f);
+			$columnParamName = "c_".($paramCounter++);
+			$params[$columnParamName] = new EarthIT_DBC_SQLIdentifier($columnName);
+			$z[] = $this->dbInternalToExternalValueSql( $f, $rc, "{$tableSql}.{{$columnParamName}}" );
+		}
+		return $z;
 	}
 }
