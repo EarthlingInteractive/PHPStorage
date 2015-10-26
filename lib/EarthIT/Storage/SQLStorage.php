@@ -24,7 +24,7 @@ class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_S
 	////
 	
 	/** @override */
-	public function itemSearch( EarthIT_Storage_Search $search, array $options=array() ) {
+	public function searchItems( EarthIT_Storage_Search $search, array $options=array() ) {
 		$q = $this->sqlGenerator->makeSearchQuery($search, $options);
 		list($sql, $params) = EarthIT_DBC_SQLExpressionUtil::templateAndParamValues($q);
 		$rows = $this->sqlRunner->fetchRows($sql,$params);
@@ -33,22 +33,20 @@ class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_S
 	
 	/** @override */
 	public function deleteItems( EarthIT_Schema_ResourceClass $rc, array $filters ) {
-		$paramCounter = 0;
+		$params = array();
+		$params['table'] = $this->sqlGenerator->rcTableExpression($rc);
+		$params['filters'] = $this->sqlGenerator->makeFilterSql( $filters, $rc, "stuff", new EarthIT_DBC_ParamsBuilder($params) );
 		$this->sqlRunner->doQuery(
 			"DELETE FROM {table} AS stuff\n".
 			"WHERE {filters}",
-			array(
-				'filters' => $this->sqlGenerator->makeFilterSql( $filters, $rc, "stuff", $paramCounter ),
-				'table' => $this->sqlGenerator->rcTableExpression($rc)
-			));
+			$params);
 	}
 	
 	/** @override */
 	public function saveItems(array $itemData, EarthIT_Schema_ResourceClass $rc, array $options=array()) {
 		EarthIT_Storage_Util::defaultSaveItemsOptions($options);
 		
-		$counter = 0;
-		$queries = $this->sqlGenerator->makeBulkSaveQueries( $itemData, $rc, $counter, $options );
+		$queries = $this->sqlGenerator->makeBulkSaveQueries( $itemData, $rc, $options );
 		
 		$resultRows = array();
 		

@@ -159,7 +159,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$this->registry->postgresStorage->deleteItems( $userRc, array() );
 		
 		// And now there should be ZERO USERS!
-		$fetchedUsers = $this->registry->postgresStorage->itemSearch(new EarthIT_Storage_Search($userRc), array());
+		$fetchedUsers = $this->registry->postgresStorage->searchItems(new EarthIT_Storage_Search($userRc), array());
 		$this->assertEquals(0, count($fetchedUsers));
 		
 		$newUsers = $this->registry->postgresStorage->saveItems( array(
@@ -170,24 +170,22 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$newUsers = self::keyById($newUsers);
 		
 		// So now there should be TOO USERS returned when we GET THEM ALL!
-		$fetchedUsers = $this->registry->postgresStorage->itemSearch(new EarthIT_Storage_Search($userRc), array());
+		$fetchedUsers = $this->registry->postgresStorage->searchItems(new EarthIT_Storage_Search($userRc), array());
 		$this->assertEquals(2, count($fetchedUsers));
+	}
+	
+	public function testGetSpecificItems() {
+		$userRc = $this->registry->schema->getResourceClass('user');
 		
-		$updates = array();
-		foreach( $newUsers as $id=>$newUser ) {
-			$updates[$id] = array('username'=>'Bob Saget') + $newUser;
-			$newUser['username'] = 'Bob Dole';
-		}
+		$newUsers = self::keyById($this->registry->postgresStorage->saveItems( array(
+			array('username' => 'Frodo Baggins', 'passhash' => 'asd123'),
+			array('username' => 'Jean Wheasler', 'passhash' => 'asd125'),
+		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true)));
 		
-		$replacedUsers = $this->registry->postgresStorage->saveItems(
-			$updates, $userRc,
-			array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true, EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY=>EarthIT_Storage_ItemSaver::ODK_KEEP)
-		);
+		$newUserIds = array_keys($newUsers);
 		
-		$replacedUsers = self::keyById($replacedUsers);
-		
-		// Nothing should have been updated.
-		$this->assertEquals($newUsers, $replacedUsers);
-		
+		$search = EarthIT_Storage_Util::makeSearch($userRc, 'ID=in:'.implode(',',$newUserIds));
+		$foundItems = self::keyById($this->registry->postgresStorage->searchItems($search));
+		$this->assertEquals($newUsers, $foundItems);
 	}
 }

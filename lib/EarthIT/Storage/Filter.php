@@ -1,6 +1,6 @@
 <?php
 
-interface EarthIT_Storage_ItemFilter
+interface EarthIT_CMIPREST_ItemFilter
 {
 	/**
 	 * @param string $tableSql SQL fragment giving the table name or alias

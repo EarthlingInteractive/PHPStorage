@@ -177,7 +177,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		return $defs;
 	}
 
-	protected function _bulkPatchyQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter, array $options ) {
+	protected function _bulkPatchyQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, array $options ) {
 		switch( $options[EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY] ) {
 		case EarthIT_Storage_ItemSaver::ODK_KEEP:
 			$doUpdate = false;
@@ -198,7 +198,8 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		$rows = $this->schemaToDbExternalItems( $itemData, $rc );
 		
 		$storableFields = EarthIT_Storage_Util::storableFields($rc);
-
+		
+		$paramCounter = 0;
 		$params = array();
 		$outputColumnValueSqls = array();
 		$inputColumnValueSqls = array();
@@ -297,7 +298,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		return $queries;
 	}
 	
-	protected function _bulkInsertQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter, $returnSaved ) {
+	protected function _bulkInsertQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, $returnSaved ) {
 		$storableFields = EarthIT_Storage_Util::storableFields($rc);
 		$defaultItem = $this->defaultFieldValues($rc);
 		foreach( $itemData as &$item ) {
@@ -309,6 +310,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 			throw new Exception("Can't store no columns.");
 		}
 		
+		$paramCounter = 0;
 		$columnNameParams = array();
 		$columnNamePlaceholders = array();
 		$toStoreColumnNamePlaceholders = array(); // Only the ones we're specifying in our insert
@@ -358,38 +360,43 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 	 * @return array of EarthIT_DBC_SQLExpressions to be doQueried; the
 	 *   last will be fetchAlled if options.returnSaved is true
 	 */
-	public function makeBulkSaveQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter, array $options=array() ) {
+	public function makeBulkSaveQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, array $options=array() ) {
 		if( count($itemData) == 0 ) return array();
 		
 		EarthIT_Storage_Util::defaultSaveItemsOptions($options);
 		
 		switch( $options[EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY] ) {
 		case EarthIT_Storage_ItemSaver::ODK_ERROR: case EarthIT_Storage_ItemSaver::ODK_UNDEFINED:
-			return $this->_bulkInsertQueries($itemData, $rc, $paramCounter, $options[EarthIT_Storage_ItemSaver::RETURN_SAVED]);
+			return $this->_bulkInsertQueries($itemData, $rc, $options[EarthIT_Storage_ItemSaver::RETURN_SAVED]);
 		default:
-			return $this->_bulkPatchyQueries($itemData, $rc, $paramCounter, $options);
+			return $this->_bulkPatchyQueries($itemData, $rc, $options);
 		}
 	}
 	
 	/**
 	 * @param array $filters array of ItemFilters
-	 * @return EarthIT_DBC_SQLExpression representing the <x> in 'WHERE <x>' part of the query
+	 * @return string representing the <x> in 'WHERE <x>' part of the query
 	 */
-	public function makeFilterSql( array $filters, EarthIT_Schema_ResourceClass $rc, $alias, &$paramCounter ) {
-		if( count($filters) == 0 ) return EarthIT_DBC_SQLExpressionUtil::expression("TRUE");
+	public function makeFilterSql( array $filters, EarthIT_Schema_ResourceClass $rc, $tableSql, EarthIT_DBC_ParamsBuilder $params ) {
+		if( count($filters) == 0 ) return 'TRUE';
 		
-		throw new Exception(get_class($this)."#".__FUNCTION__." not yet implemented.");
+		$sqlz = array();
+		foreach( $filters as $filter ) {
+			$sqlz[] = $filter->toSql($tableSql, $this->dbObjectNamer, $params);
+		}
+		return implode(" AND ", $sqlz);
 	}
 	
 	public function makeSearchQuery( EarthIT_Storage_Search $search, array $options=array() ) {
 		$paramCounter = 0;
 		$params = array();
+		$PB = new EarthIT_DBC_ParamsBuilder($params);
 		$params['table']  = $this->rcTableExpression($search->resourceClass);
-		$params['conditions'] = $this->makeFilterSql($search->filters, $search->resourceClass, 'stuff', $paramCounter);
+		$conditions = $this->makeFilterSql($search->filters, $search->resourceClass, 'stuff', $PB);
 		
 		// TODO: only select certain fields if fieldsOfInterest given
-		$selects = $this->makeDbExternalSelects($search->resourceClass->getFields(), $search->resourceClass, 'stuff', $paramCounter, $params);
-		$selectSqls = EarthIT_Storage_Util::formatSelects($selects, $paramCounter, $params);
+		$selects = $this->makeDbExternalFieldValueSqls($search->resourceClass->getFields(), $search->resourceClass, 'stuff', $PB);
+		$selectSqls = EarthIT_Storage_Util::formatSelectComponents($selects, $PB);
 		if( count($selectSqls) == 0 ) {
 			throw new Exception("Can't select zero stuff.");
 		}
@@ -404,19 +411,21 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		return EarthIT_DBC_SQLExpressionUtil::expression(
 			"SELECT\n\t".implode(",\n\t", $selectSqls)."\n".
 			"FROM {table} AS stuff\n".
-			"WHERE {conditions}\n".
+			"WHERE {$conditions}\n".
 			$orderByStuff.
 			$limitStuff,
 			$params
 		);
 	}
 	
-	public function makeDbExternalSelects( array $fields, EarthIT_Schema_ResourceClass $rc, $tableSql, &$paramCounter, array &$params ) {
+	public function makeDbExternalFieldValueSqls(
+		array $fields, EarthIT_Schema_ResourceClass $rc, $tableSql,
+		EarthIT_DBC_ParamsBuilder $params
+	) {
 		$z = array();
 		foreach( $fields as $f ) {
 			$columnName = $this->dbObjectNamer->getColumnName($rc, $f);
-			$columnParamName = "c_".($paramCounter++);
-			$params[$columnParamName] = new EarthIT_DBC_SQLIdentifier($columnName);
+			$columnParamName = $params->newParam('c', new EarthIT_DBC_SQLIdentifier($columnName));
 			$z[] = $this->dbInternalToExternalValueSql( $f, $rc, "{$tableSql}.{{$columnParamName}}" );
 		}
 		return $z;

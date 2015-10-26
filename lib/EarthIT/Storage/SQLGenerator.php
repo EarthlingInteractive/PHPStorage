@@ -34,13 +34,16 @@ interface EarthIT_Storage_SQLGenerator
 	 * @throws EarthIT_Storage_SaveOptionsUnsupported if the option/data combination isn't supported
 	 * @return array of EarthIT_Storage_StorageQueries to be doQueried/fetchRowsed.
 	 */
-	public function makeBulkSaveQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, &$paramCounter, array $options=array() );
+	public function makeBulkSaveQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, array $options=array() );
 	
 	/**
 	 * @param array $filters array of ItemFilters
-	 * @return EarthIT_DBC_SQLExpression representing the <x> in 'WHERE <x>' part of the query
+	 * @param EarthIT_Schema_ResourceClass $rc
+	 * @param string $tableSql SQL text indicating the table or alias to filter
+	 * @param EarthIT_DBC_ParamsBuilder
+	 * @return string SQL text representing the <x> in 'WHERE <x>' part of the query
 	 */
-	public function makeFilterSql( array $filters, EarthIT_Schema_ResourceClass $rc, $alias, &$paramCounter );
+	public function makeFilterSql( array $filters, EarthIT_Schema_ResourceClass $rc, $tableSql, EarthIT_DBC_ParamsBuilder $params );
 	
 	/**
 	 * Generate a query that will return a bunch of rows in DB-external form
@@ -67,5 +70,7 @@ interface EarthIT_Storage_SQLGenerator
 	 * @return array of value alias => EarthIT_DBC_SQLExpression to be used
 	 *   to select all values into db-external form
 	 */
-	public function makeDbExternalSelects( array $fields, EarthIT_Schema_ResourceClass $rc, $tableSql, &$paramCounter, array &$params );
+	public function makeDbExternalFieldValueSqls(
+		array $fields, EarthIT_Schema_ResourceClass $rc, $tableSql,
+		EarthIT_DBC_ParamsBuilder $params );
 }

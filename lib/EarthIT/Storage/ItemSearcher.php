@@ -11,5 +11,5 @@ interface EarthIT_Storage_ItemSearcher
 	 *     fieldsOfInterest => array of names of fields that you care about (if not specified, you get all of them) 
 	 * @return array of items, keyed by stringified primary key
 	 */ 
-	public function itemSearch( EarthIT_Storage_Search $search, array $options=array() );
+	public function searchItems( EarthIT_Storage_Search $search, array $options=array() );
 }
