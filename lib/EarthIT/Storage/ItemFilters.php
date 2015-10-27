@@ -5,8 +5,48 @@
  */
 class EarthIT_Storage_ItemFilters
 {
+	public static function ored( array $filters ) {
+		if( count($filters) === 1 ) return EarthIT_Storage_Util::first($filters);
+		return new EarthIT_Storage_Filter_OredItemFilter($filters);
+	}
+	
+	public static function anded( array $filters ) {
+		if( count($filters) === 1 ) return EarthIT_Storage_Util::first($filters);
+		return new EarthIT_Storage_Filter_AndedItemFilter($filters);
+	}
+
+	/**
+	 * A filter that matches everything!
+	 */
 	public static function emptyFilter() {
-		return new EarthIT_Storage_Filter_AndedItemFilter(array());
+		return self::anded(array());
+	}
+	
+	public static function byId( $ids, EarthIT_Schema_ResourceClass $rc ) {
+		if( $ids === '' ) $ids = array();
+		if( is_string($ids) ) $ids = array($ids);
+		if( !is_array($ids) ) {
+			throw new Exception("'\$ids' parameter must be a string or array");
+		}
+		
+		// TODO: If just a single ID field, use an IN (...) instead
+		
+		$filters = array();
+		foreach( $ids as $id ) {
+			$filters[] = self::exactFieldValues( EarthIT_Storage_Util::itemIdToFieldValues($id, $rc), $rc );
+		}
+		
+		// It can be any of those IDs!
+		return self::ored($filters);
+	}
+	
+	public static function exactFieldValues( array $fieldValues, EarthIT_Schema_ResourceClass $rc ) {
+		$fields = $rc->getFields();
+		$filters = array();
+		foreach( $fieldValues as $fn=>$v ) {
+			$filters[] = new EarthIT_Storage_Filter_ExactMatchFieldValueFilter($fields[$fn], $rc, $v);
+		}
+		return self::anded($filters);
 	}
 	
 	public static function parse( $filterString, EarthIT_Schema_ResourceClass $rc ) {
@@ -28,16 +68,18 @@ class EarthIT_Storage_ItemFilters
 		}
 		switch( $scheme ) {
 		case 'eq':
-			$comparisonOp = new EarthIT_Storage_Filter_InfixComparisonOp('===', '=');
-			// TODO: convert the value to the proper type
-			$vExp = new EarthIT_Storage_Filter_ScalarValueExpression($pattern);
-			break;
+			$value = EarthIT_Storage_Util::cast($pattern, $field->getType()->getPhpTypeName());
+			return new EarthIT_Storage_Filter_ExactMatchFieldValueFilter($field, $rc, $value);
 		case 'in':
+			$values = array();
+			foreach( explode(',',$pattern) as $p ) {
+				$values[] = EarthIT_Storage_Util::cast($p, $field->getType()->getPhpTypeName());
+			}
 			$comparisonOp = EarthIT_Storage_Filter_InListComparisonOp::getInstance();
-			$vExp = new EarthIT_Storage_Filter_ListValueExpression(explode(',',$pattern));
+			$vExp = new EarthIT_Storage_Filter_ListValueExpression($values);
 			break;
 		case 'like':
-			return new EarthIT_Storage_Filter_FieldValuePatternFilter($field, $rc, $pattern, true);
+			return new EarthIT_Storage_Filter_PatternFieldValueFilter($field, $rc, $pattern, true);
 		default:
 			throw new Exception("Unrecognized pattern scheme: '{$scheme}'");
 		}

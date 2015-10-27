@@ -1,6 +1,6 @@
 <?php
 
-class EarthIT_Storage_Filter_FieldValuePatternFilter implements EarthIT_Storage_Filter_FieldValueFilter
+class EarthIT_Storage_Filter_PatternFieldValueFilter implements EarthIT_Storage_Filter_FieldValueFilter
 {
 	protected $rc;
 	protected $field;

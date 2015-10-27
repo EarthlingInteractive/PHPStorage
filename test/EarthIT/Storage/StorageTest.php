@@ -195,6 +195,21 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$foundItems = self::keyById($this->storage->searchItems($search));
 		$this->assertEquals($newUsers, $foundItems);
 	}
+
+	public function testGetSpecificItemById() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		$newUsers = self::keyById($this->storage->saveItems( array(
+			array('username' => 'Frodo Baggins', 'passhash' => 'asd123'),
+			array('username' => 'Jean Wheasler', 'passhash' => 'asd125'),
+		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true)));
+		
+		$newUserIds = array_keys($newUsers);
+		
+		$search = EarthIT_Storage_Util::makeSearch($userRc, 'ID=in:'.implode(',',$newUserIds));
+		$foundItems = self::keyById($this->storage->searchItems($search));
+		$this->assertEquals($newUsers, $foundItems);
+	}
 	
 	public function testSearchWithOrdering() {
 		$userRc = $this->registry->schema->getResourceClass('user');
@@ -206,13 +221,8 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		
 		$newUserIds = array_keys($newUsers);
 		
-		$search = EarthIT_Storage_Util::makeSearch($userRc, 'ID=in:'.implode(',',$newUserIds), '+ID');
-		$gotUsers = self::keyById($this->storage->searchItems($search));
+		$gotUsers = self::keyById(EarthIT_Storage_Util::getItemsById($newUserIds, $userRc, $this->storage));
 		$this->assertEquals($newUsers, $gotUsers);
-
-		$search = EarthIT_Storage_Util::makeSearch($userRc, 'ID=in:'.implode(',',$newUserIds), '-ID');
-		$gotUsers = $this->storage->searchItems($search);
-		$this->assertEquals(array_reverse($newUsers, true), self::keyById($gotUsers));
 	}
 
 	public function testSearchWithLikePattern() {

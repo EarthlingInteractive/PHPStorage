@@ -1,6 +1,6 @@
 <?php
 
-class EarthIT_Storage_Filter_AndedItemFilter implements EarthIT_Storage_ItemFilter
+class EarthIT_Storage_Filter_OredItemFilter implements EarthIT_Storage_ItemFilter
 {
 	protected $componentFilters;
 	
@@ -20,11 +20,11 @@ class EarthIT_Storage_Filter_AndedItemFilter implements EarthIT_Storage_ItemFilt
 			$sqlz[] = $f->toSql($tableSql, $dbObjectNamer, $params);
 		}
 		
-		return '('.implode(' AND ',$sqlz).')';
+		return '('.implode(' OR ',$sqlz).')';
 	}
 	
 	public function matches( $item ) {
-		foreach( $this->componentFilters as $f ) if( !$f->matches($item) ) return false;
-		return true;
+		foreach( $this->componentFilters as $f ) if( $f->matches($item) ) return true;
+		return false;
 	}
 }
