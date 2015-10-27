@@ -407,7 +407,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		if( $search->comparator instanceof EarthIT_Storage_FieldwiseComparator ) {
 			foreach( $search->comparator->getComponents() as $cc ) {
 				$columnName = $this->dbObjectNamer->getColumnName($rc, $rc->getField($cc->getFieldName()));
-				$orderBys[] = '{'.$PB->bind(new EarthIT_DBC_SQLIdentifier($columnName)).'} '.
+				$orderBys[] = '{'.$PB->newParam('c',new EarthIT_DBC_SQLIdentifier($columnName)).'} '.
 					$cc->getDirection();
 			}
 		} else {
