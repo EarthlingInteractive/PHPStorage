@@ -62,7 +62,7 @@ class EarthIT_Storage_Util
 		$valueStrParts = explode(':', $valueStr, 2);
 		if( count($valueStrParts) == 1 ) {
 			$pattern = $valueStr;
-			$scheme = 'like';
+			$scheme = strpos($pattern,'*') === false ? 'eq' : 'like';
 		} else {
 			$pattern = $valueStrParts[1];
 			$scheme = $valueStrParts[0];
@@ -77,6 +77,8 @@ class EarthIT_Storage_Util
 			$comparisonOp = EarthIT_Storage_Filter_InListComparisonOp::getInstance();
 			$vExp = new EarthIT_Storage_Filter_ListValueExpression(explode(',',$pattern));
 			break;
+		case 'like':
+			return new EarthIT_Storage_Filter_FieldValuePatternFilter($field, $rc, $pattern, true);
 		default:
 			throw new Exception("Unrecognized pattern scheme: '{$scheme}'");
 		}
