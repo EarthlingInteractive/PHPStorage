@@ -1,30 +1,14 @@
 <?php
 
-class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
+abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 {
+	protected abstract function makeStorage();
+	
 	protected $storage;
 	
 	public function setUp() {
 		parent::setUp();
-		$this->storage = $this->registry->postgresStorage;
-	}
-	
-	public function testInsertSimple() {
-		$this->registry->storageHelper->preallocateEntityIds(2);
-		$entityId0 = $this->registry->storageHelper->newEntityId();
-		$entityId1 = $this->registry->storageHelper->newEntityId();
-		$userRc = $this->registry->schema->getResourceClass('user');
-		
-		$oldUserCount = $this->registry->storageHelper->queryValue("SELECT COUNT(*) FROM storagetest.user");
-		
-		$this->storage->saveItems( array(
-			array('ID' => $entityId0, 'username' => 'Bob Hope', 'passhash' => 'asd123'),
-			array('ID' => $entityId1, 'username' => 'Bob Jones', 'passhash' => 'asd125'),
-		), $userRc);
-		
-		$newUserCount = $this->registry->storageHelper->queryValue("SELECT COUNT(*) FROM storagetest.user");
-		
-		$this->assertEquals( $oldUserCount + 2, $newUserCount );
+		$this->storage = $this->makeStorage();
 	}
 	
 	public function testInsertFullyWithReturn() {
@@ -181,7 +165,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$this->assertEquals(2, count($fetchedUsers));
 	}
 	
-	public function testGetSpecificItems() {
+	public function testGetSpecificItemsWithInFilter() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
 		$newUsers = self::keyById($this->storage->saveItems( array(
@@ -206,9 +190,8 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		
 		$newUserIds = array_keys($newUsers);
 		
-		$search = EarthIT_Storage_Util::makeSearch($userRc, 'ID=in:'.implode(',',$newUserIds));
-		$foundItems = self::keyById($this->storage->searchItems($search));
-		$this->assertEquals($newUsers, $foundItems);
+		$gotUsers = self::keyById(EarthIT_Storage_Util::getItemsById($newUserIds, $userRc, $this->storage));
+		$this->assertEquals($newUsers, $gotUsers);
 	}
 	
 	public function testSearchWithOrdering() {
@@ -221,8 +204,13 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		
 		$newUserIds = array_keys($newUsers);
 		
+		$search = EarthIT_Storage_Util::makeSearch($userRc, 'ID=in:'.implode(',',$newUserIds), '+ID');
 		$gotUsers = self::keyById(EarthIT_Storage_Util::getItemsById($newUserIds, $userRc, $this->storage));
 		$this->assertEquals($newUsers, $gotUsers);
+
+		$search = EarthIT_Storage_Util::makeSearch($userRc, 'ID=in:'.implode(',',$newUserIds), '-ID');
+		$gotUsers = self::keyById(EarthIT_Storage_Util::getItemsById($newUserIds, $userRc, $this->storage));
+		$this->assertEquals(array_reverse($newUsers,true), $gotUsers);
 	}
 
 	public function testSearchWithLikePattern() {
