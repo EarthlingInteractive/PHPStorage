@@ -2,6 +2,13 @@
 
 class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 {
+	protected $storage;
+	
+	public function setUp() {
+		parent::setUp();
+		$this->storage = $this->registry->postgresStorage;
+	}
+	
 	public function testInsertSimple() {
 		$this->registry->storageHelper->preallocateEntityIds(2);
 		$entityId0 = $this->registry->storageHelper->newEntityId();
@@ -10,7 +17,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		
 		$oldUserCount = $this->registry->storageHelper->queryValue("SELECT COUNT(*) FROM storagetest.user");
 		
-		$this->registry->postgresStorage->saveItems( array(
+		$this->storage->saveItems( array(
 			array('ID' => $entityId0, 'username' => 'Bob Hope', 'passhash' => 'asd123'),
 			array('ID' => $entityId1, 'username' => 'Bob Jones', 'passhash' => 'asd125'),
 		), $userRc);
@@ -26,7 +33,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$entityId1 = $this->registry->storageHelper->newEntityId();
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
-		$newUsers = $this->registry->postgresStorage->saveItems( array(
+		$newUsers = $this->storage->saveItems( array(
 			array('ID' => $entityId0, 'username' => 'Bob Hope', 'passhash' => 'asd123'),
 			array('ID' => $entityId1, 'username' => 'Bob Jones', 'passhash' => 'asd125'),
 		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true));
@@ -37,7 +44,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 	public function testInsertDefaultIdsWithReturn() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
-		$newUsers = $this->registry->postgresStorage->saveItems( array(
+		$newUsers = $this->storage->saveItems( array(
 			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
 			array('username' => 'Bob Jones', 'passhash' => 'asd125'),
 		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true));
@@ -57,7 +64,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 	public function testUpsertWithReturn() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
-		$newUsers = $this->registry->postgresStorage->saveItems( array(
+		$newUsers = $this->storage->saveItems( array(
 			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
 			array('username' => 'Bob Jones', 'passhash' => 'asd125'),
 		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true));
@@ -70,7 +77,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		
 		// Update everyone to be named "Bob Dole"
 		// but keep their existing passhash (and, of course, ID)
-		$updatedUsers = $this->registry->postgresStorage->saveItems(
+		$updatedUsers = $this->storage->saveItems(
 			$newUsers, $userRc,
 			array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true, EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY=>EarthIT_Storage_ItemSaver::ODK_UPDATE)
 		);
@@ -92,7 +99,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 	public function testReplaceWithReturn() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
-		$newUsers = $this->registry->postgresStorage->saveItems( array(
+		$newUsers = $this->storage->saveItems( array(
 			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
 			array('username' => 'Bob Jones', 'passhash' => 'asd125'),
 		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true));
@@ -106,7 +113,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		
 		// Update everyone to be named "Bob Dole"
 		// but keep their existing passhash (and, of course, ID)
-		$replacedUsers = $this->registry->postgresStorage->saveItems(
+		$replacedUsers = $this->storage->saveItems(
 			$newUsers, $userRc,
 			array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true, EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY=>EarthIT_Storage_ItemSaver::ODK_REPLACE)
 		);
@@ -128,7 +135,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 	public function testInsertKeepWithReturn() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
-		$newUsers = $this->registry->postgresStorage->saveItems( array(
+		$newUsers = $this->storage->saveItems( array(
 			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
 			array('username' => 'Bob Jones', 'passhash' => 'asd125'),
 		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true));
@@ -141,7 +148,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 			$newUser['username'] = 'Bob Dole';
 		}
 		
-		$replacedUsers = $this->registry->postgresStorage->saveItems(
+		$replacedUsers = $this->storage->saveItems(
 			$updates, $userRc,
 			array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true, EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY=>EarthIT_Storage_ItemSaver::ODK_KEEP)
 		);
@@ -156,13 +163,13 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
 		// BALEET THEM ALL!
-		$this->registry->postgresStorage->deleteItems( $userRc, EarthIT_Storage_ItemFilters::emptyFilter() );
+		$this->storage->deleteItems( $userRc, EarthIT_Storage_ItemFilters::emptyFilter() );
 		
 		// And now there should be ZERO USERS!
-		$fetchedUsers = $this->registry->postgresStorage->searchItems(new EarthIT_Storage_Search($userRc));
+		$fetchedUsers = $this->storage->searchItems(new EarthIT_Storage_Search($userRc));
 		$this->assertEquals(0, count($fetchedUsers));
 		
-		$newUsers = $this->registry->postgresStorage->saveItems( array(
+		$newUsers = $this->storage->saveItems( array(
 			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
 			array('username' => 'Bob Jones', 'passhash' => 'asd125'),
 		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true));
@@ -170,14 +177,14 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$newUsers = self::keyById($newUsers);
 		
 		// So now there should be TOO USERS returned when we GET THEM ALL!
-		$fetchedUsers = $this->registry->postgresStorage->searchItems(new EarthIT_Storage_Search($userRc));
+		$fetchedUsers = $this->storage->searchItems(new EarthIT_Storage_Search($userRc));
 		$this->assertEquals(2, count($fetchedUsers));
 	}
 	
 	public function testGetSpecificItems() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
-		$newUsers = self::keyById($this->registry->postgresStorage->saveItems( array(
+		$newUsers = self::keyById($this->storage->saveItems( array(
 			array('username' => 'Frodo Baggins', 'passhash' => 'asd123'),
 			array('username' => 'Jean Wheasler', 'passhash' => 'asd125'),
 		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true)));
@@ -185,14 +192,14 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$newUserIds = array_keys($newUsers);
 		
 		$search = EarthIT_Storage_Util::makeSearch($userRc, 'ID=in:'.implode(',',$newUserIds));
-		$foundItems = self::keyById($this->registry->postgresStorage->searchItems($search));
+		$foundItems = self::keyById($this->storage->searchItems($search));
 		$this->assertEquals($newUsers, $foundItems);
 	}
 	
 	public function testSearchWithOrdering() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
-		$newUsers = self::keyById($this->registry->postgresStorage->saveItems( array(
+		$newUsers = self::keyById($this->storage->saveItems( array(
 			array('username' => 'Frodo Baggins', 'passhash' => 'asd123'),
 			array('username' => 'Jean Wheasler', 'passhash' => 'asd125'),
 		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true)));
@@ -200,18 +207,18 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$newUserIds = array_keys($newUsers);
 		
 		$search = EarthIT_Storage_Util::makeSearch($userRc, 'ID=in:'.implode(',',$newUserIds), '+ID');
-		$gotUsers = self::keyById($this->registry->postgresStorage->searchItems($search));
+		$gotUsers = self::keyById($this->storage->searchItems($search));
 		$this->assertEquals($newUsers, $gotUsers);
 
 		$search = EarthIT_Storage_Util::makeSearch($userRc, 'ID=in:'.implode(',',$newUserIds), '-ID');
-		$gotUsers = $this->registry->postgresStorage->searchItems($search);
+		$gotUsers = $this->storage->searchItems($search);
 		$this->assertEquals(array_reverse($newUsers, true), self::keyById($gotUsers));
 	}
 
 	public function testSearchWithLikePattern() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
-		$newUsers = self::keyById($this->registry->postgresStorage->saveItems( array(
+		$newUsers = self::keyById($this->storage->saveItems( array(
 			array('username' => 'Frodo Baggins', 'passhash' => 'asd123'),
 			array('username' => 'Jean Wheasler', 'passhash' => 'asd125'),
 		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true)));
@@ -219,7 +226,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$newUserIds = array_keys($newUsers);
 		
 		$search = EarthIT_Storage_Util::makeSearch($userRc, 'ID=in:'.implode(',',$newUserIds).'&username=like:*baggins');
-		$gotUsers = self::keyById($this->registry->postgresStorage->searchItems($search));
+		$gotUsers = self::keyById($this->storage->searchItems($search));
 		$this->assertEquals(array($newUserIds[0]=>$newUsers[$newUserIds[0]]), $gotUsers);
 	}
 }
