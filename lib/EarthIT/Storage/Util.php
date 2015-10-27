@@ -40,6 +40,18 @@ class EarthIT_Storage_Util
 		}
 	}
 	
+	/**
+	 * Return a copy of $item where field values have been casted to their correct types
+	 */
+	public static function castItemFieldValues( array $item, EarthIT_Schema_ResourceClass $rc ) {
+		foreach( $rc->getFields() as $fn=>$f ) {
+			if( isset($item[$fn]) and ($t = $f->getType()) and ($pt = $t->getPhpTypeName()) ) {
+				$item[$fn] = self::cast($item[$fn], $pt);
+			}
+		}
+		return $item;
+	}
+	
 	public static function itemIdRegex( EarthIT_Schema_ResourceClass $rc ) {
 		$pk = $rc->getPrimaryKey();
 		if( $pk === null or count($pk->getFieldNames()) == 0 ) {
@@ -89,7 +101,6 @@ class EarthIT_Storage_Util
 		foreach( $pk->getFieldNames() as $fn ) {
 			$field = $fields[$fn];
 			$idFieldValues[$fn] = self::cast($bif[$i], $field->getType()->getPhpTypeName());
-			//ezecho("cast(".var_export($bif[$i],true).",".var_export($field->getType()->getPhpTypeName(),true).") = ".var_export($idFieldValues[$fn])." // $fn");
 			++$i;
 		}
 		
@@ -112,7 +123,8 @@ class EarthIT_Storage_Util
 			}
 			if( $allFields and !isset($defs[$fn]) ) $defs[$fn] = null;
 		}
-		return $defs;
+		// 'default value' might be of the wrong type sometimes.
+		return self::castItemFieldValues($defs, $rc);
 	}
 	
 	/**

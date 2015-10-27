@@ -54,8 +54,7 @@ implements
 					throw new Exception("Failed to generate an ID for a ".$rc->getName());
 				}
 			}
-			// TODO: this:
-			//$item = EarthIT_Storage_Util::castFieldValues(
+			$item = EarthIT_Storage_Util::castItemFieldValues($item, $rc);
 			if( isset($this->items[$rcName][$id]) ) {
 				switch( ($odk = $options[EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY]) ) {
 				case EarthIT_Storage_ItemSaver::ODK_ERROR:
