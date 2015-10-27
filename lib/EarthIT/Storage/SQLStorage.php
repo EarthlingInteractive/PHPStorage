@@ -28,7 +28,7 @@ class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_S
 		$q = $this->sqlGenerator->makeSearchQuery($search, $options);
 		list($sql, $params) = EarthIT_DBC_SQLExpressionUtil::templateAndParamValues($q);
 		$rows = $this->sqlRunner->fetchRows($sql,$params);
-		return $this->sqlGenerator->dbExternalToSchemaItems($rows, $search->resourceClass);
+		return $this->sqlGenerator->dbExternalToSchemaItems($rows, $search->getResourceClass());
 	}
 	
 	/** @override */

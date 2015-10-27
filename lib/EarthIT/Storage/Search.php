@@ -32,5 +32,9 @@ class EarthIT_Storage_Search
 		$this->limit = $limit;
 	}
 	
-	public function __get($k) { return $this->$k; }
+	public function getResourceClass() { return $this->resourceClass; }
+	public function getFilters() { return $this->filters; }
+	public function getComparator() { return $this->comparator; }
+	public function getSkip() { return $this->skip; }
+	public function getLimit() { return $this->limit; }
 }

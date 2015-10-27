@@ -388,13 +388,13 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 	}
 	
 	public function makeSearchQuery( EarthIT_Storage_Search $search, array $options=array() ) {
-		$rc = $search->resourceClass;
+		$rc = $search->getResourceClass();
 		
 		$paramCounter = 0;
 		$params = array();
 		$PB = new EarthIT_DBC_ParamsBuilder($params);
 		$params['table']  = $this->rcTableExpression($rc);
-		$conditions = $this->makeFilterSql($search->filters, $rc, 'stuff', $PB);
+		$conditions = $this->makeFilterSql($search->getFilters(), $rc, 'stuff', $PB);
 		
 		// TODO: only select certain fields if fieldsOfInterest given
 		$selects = $this->makeDbExternalFieldValueSqls($rc->getFields(), $rc, 'stuff', $PB);
@@ -404,19 +404,22 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		}
 		
 		$orderBys = array();
-		if( $search->comparator instanceof EarthIT_Storage_FieldwiseComparator ) {
-			foreach( $search->comparator->getComponents() as $cc ) {
+		$comparator = $search->getComparator();
+		if( $comparator instanceof EarthIT_Storage_FieldwiseComparator ) {
+			foreach( $comparator->getComponents() as $cc ) {
 				$columnName = $this->dbObjectNamer->getColumnName($rc, $rc->getField($cc->getFieldName()));
 				$orderBys[] = '{'.$PB->newParam('c',new EarthIT_DBC_SQLIdentifier($columnName)).'} '.
 					$cc->getDirection();
 			}
 		} else {
-			throw new Exception("Don't know how to order based on a ".get_class($search->comparator));
+			throw new Exception("Don't know how to order based on a ".get_class($comparator));
 		}
 		
 		$limitStuff = "";
-		if( $search->skip != 0 ) throw new Exception("Doesn't support skip yet");
-		if( $search->limit != 0 ) throw new Exception("Doesn't support limit yet");
+		$skip  = $search->getSkip();
+		$limit = $search->getLimit();
+		if( $skip  ) throw new Exception("Doesn't support skip yet");
+		if( $limit ) throw new Exception("Doesn't support limit yet");
 		
 		return EarthIT_DBC_SQLExpressionUtil::expression(
 			"SELECT\n\t".implode(",\n\t", $selectSqls)."\n".
