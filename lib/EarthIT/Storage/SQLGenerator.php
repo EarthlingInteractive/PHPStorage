@@ -35,16 +35,7 @@ interface EarthIT_Storage_SQLGenerator
 	 * @return array of EarthIT_Storage_StorageQueries to be doQueried/fetchRowsed.
 	 */
 	public function makeBulkSaveQueries( array $itemData, EarthIT_Schema_ResourceClass $rc, array $options=array() );
-	
-	/**
-	 * @param array $filters array of ItemFilters
-	 * @param EarthIT_Schema_ResourceClass $rc
-	 * @param string $tableSql SQL text indicating the table or alias to filter
-	 * @param EarthIT_DBC_ParamsBuilder
-	 * @return string SQL text representing the <x> in 'WHERE <x>' part of the query
-	 */
-	public function makeFilterSql( array $filters, EarthIT_Schema_ResourceClass $rc, $tableSql, EarthIT_DBC_ParamsBuilder $params );
-	
+		
 	/**
 	 * Generate a query that will return a bunch of rows in DB-external form
 	 *

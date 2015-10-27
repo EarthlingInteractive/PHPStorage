@@ -156,10 +156,10 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
 		// BALEET THEM ALL!
-		$this->registry->postgresStorage->deleteItems( $userRc, array() );
+		$this->registry->postgresStorage->deleteItems( $userRc, EarthIT_Storage_ItemFilters::emptyFilter() );
 		
 		// And now there should be ZERO USERS!
-		$fetchedUsers = $this->registry->postgresStorage->searchItems(new EarthIT_Storage_Search($userRc), array());
+		$fetchedUsers = $this->registry->postgresStorage->searchItems(new EarthIT_Storage_Search($userRc));
 		$this->assertEquals(0, count($fetchedUsers));
 		
 		$newUsers = $this->registry->postgresStorage->saveItems( array(
@@ -170,7 +170,7 @@ class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$newUsers = self::keyById($newUsers);
 		
 		// So now there should be TOO USERS returned when we GET THEM ALL!
-		$fetchedUsers = $this->registry->postgresStorage->searchItems(new EarthIT_Storage_Search($userRc), array());
+		$fetchedUsers = $this->registry->postgresStorage->searchItems(new EarthIT_Storage_Search($userRc));
 		$this->assertEquals(2, count($fetchedUsers));
 	}
 	

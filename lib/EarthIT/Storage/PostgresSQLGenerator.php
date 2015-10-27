@@ -373,20 +373,6 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		}
 	}
 	
-	/**
-	 * @param array $filters array of ItemFilters
-	 * @return string representing the <x> in 'WHERE <x>' part of the query
-	 */
-	public function makeFilterSql( array $filters, EarthIT_Schema_ResourceClass $rc, $tableSql, EarthIT_DBC_ParamsBuilder $params ) {
-		if( count($filters) == 0 ) return 'TRUE';
-		
-		$sqlz = array();
-		foreach( $filters as $filter ) {
-			$sqlz[] = $filter->toSql($tableSql, $this->dbObjectNamer, $params);
-		}
-		return implode(" AND ", $sqlz);
-	}
-	
 	public function makeSearchQuery( EarthIT_Storage_Search $search, array $options=array() ) {
 		$rc = $search->getResourceClass();
 		
@@ -394,7 +380,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		$params = array();
 		$PB = new EarthIT_DBC_ParamsBuilder($params);
 		$params['table']  = $this->rcTableExpression($rc);
-		$conditions = $this->makeFilterSql($search->getFilters(), $rc, 'stuff', $PB);
+		$conditions = $search->getFilter()->toSql('stuff', $this->dbObjectNamer,$PB);
 		
 		// TODO: only select certain fields if fieldsOfInterest given
 		$selects = $this->makeDbExternalFieldValueSqls($rc->getFields(), $rc, 'stuff', $PB);

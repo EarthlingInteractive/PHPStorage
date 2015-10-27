@@ -32,13 +32,13 @@ class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_S
 	}
 	
 	/** @override */
-	public function deleteItems( EarthIT_Schema_ResourceClass $rc, array $filters ) {
+	public function deleteItems( EarthIT_Schema_ResourceClass $rc, EarthIT_Storage_ItemFilter $filter ) {
 		$params = array();
 		$params['table'] = $this->sqlGenerator->rcTableExpression($rc);
-		$params['filters'] = $this->sqlGenerator->makeFilterSql( $filters, $rc, "stuff", new EarthIT_DBC_ParamsBuilder($params) );
+		$filterSql = $filter->toSql('stuff', $this->dbObjectNamer, new EarthIT_DBC_ParamsBuilder($params));
 		$this->sqlRunner->doQuery(
 			"DELETE FROM {table} AS stuff\n".
-			"WHERE {filters}",
+			"WHERE {$filterSql}",
 			$params);
 	}
 	
