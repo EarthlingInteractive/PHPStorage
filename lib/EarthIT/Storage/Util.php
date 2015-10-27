@@ -60,6 +60,19 @@ class EarthIT_Storage_Util
 		return implode("-", $parts);
 	}
 	
+	public static function itemId( array $item, EarthIT_Schema_ResourceClass $rc ) {
+		$pk = $rc->getPrimaryKey();
+		if( $pk === null or count($pk->getFieldNames()) == 0 ) return null;
+		
+		$fields = $rc->getFields();
+		$parts = array();
+		foreach( $pk->getFieldNames() as $fn ) {
+			if( !isset($item[$fn]) ) return null;
+			$parts[] = $item[$fn];
+		}
+		return implode("-", $parts);
+	}
+	
 	/**
 	 * return array of field name => field value for the primary key fields encoded in $id
 	 */
