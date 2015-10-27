@@ -4,14 +4,14 @@ class EarthIT_Storage_Search
 {
 	protected $resourceClass;
 	protected $filters;
-	protected $orderBy;
+	protected $comparator;
 	protected $skip;
 	protected $limit;
 	
 	public function __construct(
 		EarthIT_Schema_ResourceClass $rc,
 		array $filters=array(),
-		array $orderBy=array(),
+		EarthIT_Storage_Comparator $comparator=null,
 		$skip=0,
 		$limit=null
 	) {
@@ -21,9 +21,13 @@ class EarthIT_Storage_Search
 			}
 		}
 		
+		if( $comparator === null ) {
+			$comparator = new EarthIT_Storage_FieldwiseComparator(array());
+		}
+		
 		$this->resourceClass = $rc;
 		$this->filters = $filters;
-		$this->orderBy = $orderBy;
+		$this->comparator = $comparator;
 		$this->skip = $skip;
 		$this->limit = $limit;
 	}

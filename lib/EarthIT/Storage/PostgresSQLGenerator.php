@@ -388,21 +388,31 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 	}
 	
 	public function makeSearchQuery( EarthIT_Storage_Search $search, array $options=array() ) {
+		$rc = $search->resourceClass;
+		
 		$paramCounter = 0;
 		$params = array();
 		$PB = new EarthIT_DBC_ParamsBuilder($params);
-		$params['table']  = $this->rcTableExpression($search->resourceClass);
-		$conditions = $this->makeFilterSql($search->filters, $search->resourceClass, 'stuff', $PB);
+		$params['table']  = $this->rcTableExpression($rc);
+		$conditions = $this->makeFilterSql($search->filters, $rc, 'stuff', $PB);
 		
 		// TODO: only select certain fields if fieldsOfInterest given
-		$selects = $this->makeDbExternalFieldValueSqls($search->resourceClass->getFields(), $search->resourceClass, 'stuff', $PB);
+		$selects = $this->makeDbExternalFieldValueSqls($rc->getFields(), $rc, 'stuff', $PB);
 		$selectSqls = EarthIT_Storage_Util::formatSelectComponents($selects, $PB);
 		if( count($selectSqls) == 0 ) {
 			throw new Exception("Can't select zero stuff.");
 		}
 		
-		$orderByStuff = "";
-		if( $search->orderBy ) throw new Exception("Doesn't support orderBy yet");
+		$orderBys = array();
+		if( $search->comparator instanceof EarthIT_Storage_FieldwiseComparator ) {
+			foreach( $search->comparator->getComponents() as $cc ) {
+				$columnName = $this->dbObjectNamer->getColumnName($rc, $rc->getField($cc->getFieldName()));
+				$orderBys[] = '{'.$PB->bind(new EarthIT_DBC_SQLIdentifier($columnName)).'} '.
+					$cc->getDirection();
+			}
+		} else {
+			throw new Exception("Don't know how to order based on a ".get_class($search->comparator));
+		}
 		
 		$limitStuff = "";
 		if( $search->skip != 0 ) throw new Exception("Doesn't support skip yet");
@@ -412,7 +422,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 			"SELECT\n\t".implode(",\n\t", $selectSqls)."\n".
 			"FROM {table} AS stuff\n".
 			"WHERE {$conditions}\n".
-			$orderByStuff.
+			($orderBys ? "ORDER BY ".implode(', ',$orderBys)."\n" : '').
 			$limitStuff,
 			$params
 		);

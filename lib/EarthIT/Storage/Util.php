@@ -91,9 +91,8 @@ class EarthIT_Storage_Util
 			$filter = self::parseFilter($rc, $filter);
 		}; unset($filter);
 		
-		if( is_string($orderBy) ) $orderBy = explode(',',$orderBy);
-		if( count($orderBy) > 0 ) throw new Exception("I don't parse orderby yet");
+		$comparator = EarthIT_Storage_FieldwiseComparator::parse($orderBy);
 		
-		return new EarthIT_Storage_Search($rc, $filters, $orderBy, $skip, $limit, $options);
+		return new EarthIT_Storage_Search($rc, $filters, $comparator, $skip, $limit, $options);
 	}
 }
