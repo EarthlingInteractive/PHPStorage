@@ -49,23 +49,7 @@ class EarthIT_Storage_ItemFilters
 		return self::anded($filters);
 	}
 	
-	public static function parse( $filterString, EarthIT_Schema_ResourceClass $rc ) {
-		if( $filterString instanceof EarthIT_Storage_ItemFilter ) return $filterString;
-		
-		$p = explode('=', $filterString, 2);
-		if( count($p) != 2 ) throw new Exception("Not enough '='-separated parts in filter string: '$filterString'");
-		$field = $rc->getField($p[0]);
-		if( $field === null ) throw new Exception("Error while parsing filter string '$filterString': no such field as '{$p[0]}'");
-		
-		$valueStr = $p[1];
-		$valueStrParts = explode(':', $valueStr, 2);
-		if( count($valueStrParts) == 1 ) {
-			$pattern = $valueStr;
-			$scheme = strpos($pattern,'*') === false ? 'eq' : 'like';
-		} else {
-			$pattern = $valueStrParts[1];
-			$scheme = $valueStrParts[0];
-		}
+	public static function fieldValueFilter( $scheme, $pattern, EarthIT_Schema_Field $field, EarthIT_Schema_ResourceClass $rc ) {
 		switch( $scheme ) {
 		case 'eq':
 			$value = EarthIT_Storage_Util::cast($pattern, $field->getType()->getPhpTypeName());
@@ -83,8 +67,29 @@ class EarthIT_Storage_ItemFilters
 		default:
 			throw new Exception("Unrecognized pattern scheme: '{$scheme}'");
 		}
-				
+		
 		return new EarthIT_Storage_Filter_FieldValueComparisonFilter($field, $rc, $comparisonOp, $vExp);
+	}
+	
+	public static function parse( $filterString, EarthIT_Schema_ResourceClass $rc, array $nameMap=array() ) {
+		if( $filterString instanceof EarthIT_Storage_ItemFilter ) return $filterString;
+		
+		$p = explode('=', $filterString, 2);
+		if( count($p) != 2 ) throw new Exception("Not enough '='-separated parts in filter string: '$filterString'");
+		$field = $rc->getField($p[0]);
+		if( $field === null ) throw new Exception("Error while parsing filter string '$filterString': no such field as '{$p[0]}'");
+		
+		$valueStr = $p[1];
+		$valueStrParts = explode(':', $valueStr, 2);
+		if( count($valueStrParts) == 1 ) {
+			$pattern = $valueStr;
+			$scheme = strpos($pattern,'*') === false ? 'eq' : 'like';
+		} else {
+			$pattern = $valueStrParts[1];
+			$scheme = $valueStrParts[0];
+		}
+		
+		return self::fieldValueFilter( $scheme, $pattern, $field, $rc );
 	}
 	
 	public static function parseMulti( $filters, EarthIT_Schema_ResourceClass $rc ) {
