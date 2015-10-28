@@ -24,9 +24,9 @@ class EarthIT_Storage_ItemFilters
 	
 	public static function byId( $ids, EarthIT_Schema_ResourceClass $rc ) {
 		if( $ids === '' ) $ids = array();
-		if( is_string($ids) ) $ids = array($ids);
+		if( is_scalar($ids) ) $ids = array($ids);
 		if( !is_array($ids) ) {
-			throw new Exception("'\$ids' parameter must be a string or array");
+			throw new Exception("'\$ids' parameter must be a scalar or array.  Got: ".var_export($ids,true));
 		}
 		
 		// TODO: If just a single ID field, use an IN (...) instead
