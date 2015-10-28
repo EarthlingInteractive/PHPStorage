@@ -48,7 +48,7 @@ interface EarthIT_Storage_SQLGenerator
 	public function makeSearchQuery( EarthIT_Storage_Search $search, array $options=array() );
 	
 	/**
-	 * Make select parts (suitable for passing to Util::formatSelects)
+	 * Make select parts (suitable for passing to Util::formatSelectComponents)
 	 * to get all the specified fields.
 	 * 
 	 * Above using dbInternalToExternalValueSql for each field, this
