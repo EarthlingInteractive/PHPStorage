@@ -227,13 +227,11 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 			
 			$pkColumnValues = array();
 			foreach( $pkColumnNames as $columnName ) {
-				if( !isset($row[$columnName]) ) {
-					// The idea is that this ends up making our query act like a plain old insert,
-					// since 'UPDATE ... WHERE {column} = NULL' will match nothing.
-					$pkColumnValues[$columnName] = null;
-				} else {
-					$pkColumnValues[$columnName] = $row[$columnName];
-				}
+				$v = isset($row[$columnName]) ? $row[$columnName] : null;
+				// The idea is that this ends up making our query act like a plain old insert,
+				// since 'UPDATE ... WHERE {column} = NULL' will match nothing.
+				$pkColumnValues[$columnName] = $v;
+				$rowParams[$columnValueParamNames[$columnName]] = $v;
 			}
 			
 			$rowInsertColumnSqls = array();

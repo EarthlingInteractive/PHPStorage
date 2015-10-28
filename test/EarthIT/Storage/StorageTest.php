@@ -227,4 +227,19 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$gotUsers = self::keyById($this->storage->searchItems($search));
 		$this->assertEquals(array($newUserIds[0]=>$newUsers[$newUserIds[0]]), $gotUsers);
 	}
+	
+	public function testPatchWithoutPrimaryKey() {
+		// Should just act as if onduplicatekey=error
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		$newUsers = self::keyById($this->storage->saveItems( array(
+			array('username' => 'Frodo Baggins', 'passhash' => 'asd123'),
+			array('username' => 'Jean Wheasler', 'passhash' => 'asd125'),
+		), $userRc, array(
+			EarthIT_Storage_ItemSaver::RETURN_SAVED=>true,
+			EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY=>EarthIT_Storage_ItemSaver::ODK_UPDATE
+		)));
+		
+		$this->assertEquals(2, count($newUsers));
+	}
 }
