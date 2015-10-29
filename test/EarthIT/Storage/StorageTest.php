@@ -6,6 +6,12 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 	
 	protected $storage;
 	
+	protected static function keyById(array $things) {
+		$keyed = array();
+		foreach( $things as $t ) $keyed[$t['ID']] = $t;
+		return $keyed;
+	}
+	
 	public function setUp() {
 		parent::setUp();
 		$this->storage = $this->makeStorage();
@@ -24,6 +30,23 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		
 		$this->assertEquals( 2, count($newUsers) );
 	}
+
+	public function testInsertFullyWithStrangelyOrderedFieldsAndReturn() {
+		$this->registry->storageHelper->preallocateEntityIds(2);
+		$entityId0 = $this->registry->storageHelper->newEntityId();
+		$entityId1 = $this->registry->storageHelper->newEntityId();
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		$newUsers = self::keyById($this->storage->saveItems( array(
+			array('ID' => $entityId0, 'passhash' => 'asd123', 'username' => 'Bob Hope' ),
+			array('ID' => $entityId1, 'passhash' => 'asd125', 'username' => 'Bob Jones'),
+		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true)));
+		
+		$this->assertEquals( array(
+			$entityId0 => array('ID' => $entityId0, 'passhash' => 'asd123', 'username' => 'Bob Hope' , 'e-mail address'=>null),
+			$entityId1 => array('ID' => $entityId1, 'passhash' => 'asd125', 'username' => 'Bob Jones', 'e-mail address'=>null),
+		), $newUsers);
+	}
 	
 	public function testInsertDefaultIdsWithReturn() {
 		$userRc = $this->registry->schema->getResourceClass('user');
@@ -37,12 +60,6 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		foreach( $newUsers as $newUser ) {
 			$this->assertTrue( isset($newUser['ID']), "Database-defaulted ID field should have a value." );
 		}
-	}
-	
-	protected static function keyById(array $things) {
-		$keyed = array();
-		foreach( $things as $t ) $keyed[$t['ID']] = $t;
-		return $keyed;
 	}
 	
 	public function testUpsertWithFieldsSpecifiedInWackyOrder() {
