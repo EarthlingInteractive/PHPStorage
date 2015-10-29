@@ -45,6 +45,38 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		return $keyed;
 	}
 	
+	public function testUpsertWithFieldsSpecifiedInWackyOrder() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		$newUsers = $this->storage->saveItems( array(
+			array('username' => 'Bob Dylan', 'passhash' => 'asd123'),
+		), $userRc, array(
+			EarthIT_Storage_ItemSaver::RETURN_SAVED => true,
+			EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY => EarthIT_Storage_ItemSaver::ODK_UPDATE
+		));
+		
+		$newUsers = self::keyById($newUsers);
+		$bob = EarthIT_Storage_Util::first($newUsers);
+		
+		$fixedUsers = $this->storage->saveItems( array(array(
+			'passhash' => 'asdf1234',
+			'ID' => $bob['ID'],
+			'username' => 'Bob Marley',
+		)), $userRc, array(
+			EarthIT_Storage_ItemSaver::RETURN_SAVED => true,
+			EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY => EarthIT_Storage_ItemSaver::ODK_UPDATE
+		));
+		
+		$fetchedUsers = $this->storage->searchItems(
+			EarthIT_Storage_Util::makeSearch($userRc, array('ID'=>$bob['ID'])));
+		$this->assertEquals( array(
+			'ID' => $bob['ID'],
+			'passhash' => 'asdf1234',
+			'username' => 'Bob Marley',
+			'e-mail address' => null
+		), EarthIT_Storage_Util::first($fetchedUsers));
+	}
+	
 	public function testUpsertWithReturn() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
