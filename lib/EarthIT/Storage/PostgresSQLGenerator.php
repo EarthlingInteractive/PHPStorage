@@ -303,10 +303,10 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 			$params[$columnNameParam] = new EarthIT_DBC_SQLIdentifier($this->dbObjectNamer->getColumnName($rc, $f));
 			$columnNamePlaceholder = "{{$columnNameParam}}";
 			$columnNamePlaceholders[$fn] = $columnNamePlaceholder;
-			if( isset($fieldsToStore[$fn]) ) $toStoreColumnNamePlaceholders[] = $columnNamePlaceholder;
 		}
 		foreach( $fieldsToStore as $fn=>$f ) {
 			$columnNameParam = $columnNameParams[$fn];
+			$toStoreColumnNamePlaceholders[] = $columnNamePlaceholders[$fn];
 		}
 		$valueRows = array();
 		foreach( $itemData as $item ) {
