@@ -92,6 +92,9 @@ class EarthIT_Storage_ItemFilters
 		return self::fieldValueFilter( $scheme, $pattern, $field, $rc );
 	}
 	
+	/**
+	 * TODO: Document how different stuffs get parsed.
+	 */
 	public static function parseMulti( $filters, EarthIT_Schema_ResourceClass $rc ) {
 		if( $filters === '' ) return self::emptyFilter();
 		if( $filters instanceof EarthIT_Storage_ItemFilter ) return $filters;
@@ -103,7 +106,10 @@ class EarthIT_Storage_ItemFilters
 			throw new Exception("'\$filters' parameter must be a string, an array, or an ItemFilter.");
 		}
 		
-		foreach( $filters as &$f ) $f = self::parse($f, $rc); unset($f);
+		foreach( $filters as $k=>&$f ) {
+			if( is_string($k) ) $f = "{$k}={$f}"; // ['ID' => 'foo'] = ['ID=foo']
+			$f = self::parse($f, $rc);
+		}; unset($f);
 		
 		if( count($filters) == 1 ) return EarthIT_Storage_Util::first($filters);
 		return new EarthIT_Storage_Filter_AndedItemFilter($filters);
