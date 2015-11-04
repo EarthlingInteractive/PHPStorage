@@ -82,11 +82,11 @@ test/db-scripts/drop-database.sql: test/dbc.json vendor
 	mkdir -p test/db-scripts
 	vendor/bin/generate-drop-database-sql "$<" >"$@"
 
-#www/images/head.png:
-#	${fetch} -o "$@" "urn:bitprint:HYWPXT25DHVRV4BXETMRZQY26E6AQCYW.33QDQ443KBXZB5F5UGYODRN2Y34DOZ4GILDI7ZA"
-
-create-database drop-database: %: test/db-scripts/%.sql
-	sudo su postgres -c "cat '$<' | psql"
+create-database: %: test/db-scripts/%.sql
+	cat '$<' | sudo -u postgres psql -v ON_ERROR_STOP=1
+	sudo -u postgres psql -v ON_ERROR_STOP=1 phpstoragetest <test/db-scripts/create-postgis-extension.sql
+drop-database: %: test/db-scripts/%.sql
+	cat '$<' | sudo -u postgres psql -v ON_ERROR_STOP=1
 
 empty-database: test/db-scripts/empty-database.sql util/phpstoragetest-psql
 	util/phpstoragetest-psql <"$<"

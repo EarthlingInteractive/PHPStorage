@@ -42,7 +42,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		EarthIT_Schema_Field $f, EarthIT_Schema_ResourceClass $rc, $dbInternalValueSql='{columnValue}'
 	) {
 		if( self::valuesOfTypeShouldBeSelectedAsGeoJson($f->getType()) ) {
-			return "ST_AsGeoJSON({$dbInternalValueSql})";
+			return "ST_AsGeoJSON({$dbInternalValueSql}, 15, 2)";
 		} else {
 			return $dbInternalValueSql;
 		}
@@ -67,7 +67,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 	public function schemaToDbExternalValue( $v, EarthIT_Schema_Field $f, EarthIT_Schema_ResourceClass $rc ) {
 		if( $v === null ) {
 			return null;
-		} else if( self::valuesOfTypeShouldBeSelectedAsJson($f->getType()) or self::valuesOfTypeShouldBeSelectedAsJson($f->getType()) ) {
+		} else if( self::valuesOfTypeShouldBeSelectedAsGeoJson($f->getType()) or self::valuesOfTypeShouldBeSelectedAsJson($f->getType()) ) {
 			return EarthIT_JSON::prettyEncode($v);
 		} else {
 			return $v;
@@ -77,7 +77,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 	public function dbExternalToSchemaValue( $v, EarthIT_Schema_Field $f, EarthIT_Schema_ResourceClass $rc ) {
 		if( $v === null ) {
 			return null;
-		} else if( self::valuesOfTypeShouldBeSelectedAsJson($f->getType()) or self::valuesOfTypeShouldBeSelectedAsJson($f->getType()) ) {
+		} else if( self::valuesOfTypeShouldBeSelectedAsGeoJson($f->getType()) or self::valuesOfTypeShouldBeSelectedAsJson($f->getType()) ) {
 			return EarthIT_JSON::decode($v);
 		} else {
 			return $v;

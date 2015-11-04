@@ -21,6 +21,15 @@ class EarthIT_Storage_Util
 		if( $phpType === null or $value === null ) return $value;
 		
 		switch( $phpType ) {
+		case 'JSON value':
+			// It could be anything!
+			return $value;
+		case 'GeoJSON array': case 'array':
+			// It needs to be an array!
+			if( !is_array($value) ) {
+				throw new Exception("Can't cast value to array: ".var_export($value,true));
+			}
+			return $value;
 		case 'string': return (string)$value;
 		case 'float': return (float)$value;
 		case 'int': return (int)$value;

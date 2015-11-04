@@ -291,4 +291,29 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		
 		$this->assertEquals(2, count($newUsers));
 	}
+	
+	public function testGeoJsonStorageAndRetrieval() {
+		$orgRc = $this->registry->schema->getResourceClass('organization');
+		$newOrgs = self::keyById($this->storage->saveItems(array(
+			array(
+				'name' => 'Test Org',
+				'office location' => array(
+					'type' => 'Point',
+					'coordinates' => array(43.06733098, -89.39270496),
+					'crs' => array('type'=>'name','properties'=>array('name'=>'EPSG:4326'))
+				)
+			)
+		), $orgRc, array(
+			EarthIT_Storage_ItemSaver::RETURN_SAVED=>true,
+		)));
+		
+		foreach( $newOrgs as $newOrg ) {
+			$loc = $newOrg['office location'];
+			$this->assertTrue( is_array($loc) );
+			$this->assertEquals( 'Point', $loc['type'] );
+			$this->assertEquals(  43, round($loc['coordinates'][0]) );
+			$this->assertEquals( -89, round($loc['coordinates'][1]) );
+			$this->assertEquals('EPSG:4326', $loc['crs']['properties']['name']);
+		}
+	}
 }

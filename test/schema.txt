@@ -31,6 +31,11 @@ class 'URI' : extends(string)
 class 'time' : extends(string) : SQL type @ "TIMESTAMP"
 class 'date' : extends(string) : SQL type @ "DATE"
 
+class 'SRID 4326 point' :
+    SQL type @ "GEOMETRY(POINT,4326)" :
+    PHP type @ "GeoJSON array" :
+    JSON type @ "GeoJSON object"
+
 schema 'storage test'
 
 sequence 'new entity ID' : initial value @ 1001 : is in namespace @ 'storage test'
@@ -50,6 +55,7 @@ class 'user' : SRC {
 class 'organization' : SRC : members are public {
 	ID : EIPK
 	name : string
+	office location : SRID 4326 point : nullable
 }
 
 class 'user organization attachment' : SRC : self-keyed {
