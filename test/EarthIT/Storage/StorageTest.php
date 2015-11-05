@@ -315,5 +315,16 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 			$this->assertEquals( -89, round($loc['coordinates'][1]) );
 			$this->assertEquals('EPSG:4326', $loc['crs']['properties']['name']);
 		}
+
+		$fetchedOrgs = self::keyById(EarthIT_Storage_Util::getItemsById(array_keys($newOrgs), $orgRc, $this->storage));
+		
+		foreach( $fetchedOrgs as $newOrg ) {
+			$loc = $newOrg['office location'];
+			$this->assertTrue( is_array($loc) );
+			$this->assertEquals( 'Point', $loc['type'] );
+			$this->assertEquals(  43, round($loc['coordinates'][0]) );
+			$this->assertEquals( -89, round($loc['coordinates'][1]) );
+			$this->assertEquals('EPSG:4326', $loc['crs']['properties']['name']);
+		}
 	}
 }
