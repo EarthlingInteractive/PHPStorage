@@ -184,7 +184,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		default:
 			throw new Exception($options[EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY].'?');
 		}
-
+		
 		$rows = $this->schemaToDbExternalItems( $itemData, $rc );
 		
 		$storableFields = EarthIT_Storage_Util::storableFields($rc);
