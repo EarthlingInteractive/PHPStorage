@@ -125,10 +125,15 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 	
 	////
 	
-	protected static function encodeColumnValuePairs( array $columnValues, array $columnParamNames, array $columnValueParamNames ) {
+	protected function encodeColumnValuePairs(
+		array $columnValues, array $columnParamNames, array $columnValueParamNames,
+		EarthIT_Schema_ResourceClass $rc, array $fieldsByColumnName
+	) {
 		$parts = array();
 		foreach( $columnValues as $columnName=>$val ) {
-			$parts[] = "{{$columnParamNames[$columnName]}} = {{$columnValueParamNames[$columnName]}}";
+			$field = $fieldsByColumnName[$columnName];
+			$parts[] = "{{$columnParamNames[$columnName]}} = ".
+				$this->dbExternalToInternalValueSql($field, $rc, "{{$columnValueParamNames[$columnName]}}");
 		}
 		return $parts;
 	}
@@ -189,8 +194,10 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		$outputColumnValueSqls = array();
 		$inputColumnValueSqls = array();
 		$columnParamNames = array();
+		$fieldsByColumnName = array();
 		foreach( $storableFields as $fn=>$f ) {
 			$columnName = $this->dbObjectNamer->getColumnName($rc, $f);
+			$fieldsByColumnName[$columnName] = $f;
 			$columnParamName = "c_".($paramCounter++);
 			$columnParamNames[$columnName] = $columnParamName;
 			$params[$columnParamName] = new EarthIT_DBC_SQLIdentifier($columnName);
@@ -211,7 +218,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		foreach( $rc->getPrimaryKey()->getFieldNames() as $fn ) {
 			if( !isset($storableFields[$fn]) ) throw new Exception($rc->getName()." PK field '$fn' not storable!  Can't generate an update query.");
 			$pkFields[$fn] = $storableFields[$fn];
-			$pkColumnNames[] = $fieldColumnNames[$fn];
+			$pkFieldColumnNames[$fn] = $fieldColumnNames[$fn];
 		}
 		
 		$nonPkColumnNames = array();
@@ -226,7 +233,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 			$rowParams = $params;
 			
 			$pkColumnValues = array();
-			foreach( $pkColumnNames as $columnName ) {
+			foreach( $pkFieldColumnNames as $fieldName=>$columnName ) {
 				$v = isset($row[$columnName]) ? $row[$columnName] : null;
 				// The idea is that this ends up making our query act like a plain old insert,
 				// since 'UPDATE ... WHERE {column} = NULL' will match nothing.
@@ -242,8 +249,8 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 				$rowParams[$columnValueParamNames[$columnName]] = $v;
 			}
 			
-			$conditions = self::encodeColumnValuePairs($pkColumnValues, $columnParamNames, $columnValueParamNames);
-			$sets       = self::encodeColumnValuePairs($row           , $columnParamNames, $columnValueParamNames);
+			$conditions = $this->encodeColumnValuePairs($pkColumnValues, $columnParamNames, $columnValueParamNames, $rc, $fieldsByColumnName);
+			$sets       = $this->encodeColumnValuePairs($row           , $columnParamNames, $columnValueParamNames, $rc, $fieldsByColumnName);
 			
 			if( $resetUnspecifiedFieldValues ) {
 				// Default everything else!
