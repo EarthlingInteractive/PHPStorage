@@ -227,9 +227,18 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 			$nonPkColumnNames[] = $fieldColumnNames[$fn];
 		}
 		
+		$resultSelectSql = implode(', ',$outputColumnValueSqls);
+			
 		$params['table'] = EarthIT_DBC_SQLExpressionUtil::tableExpression($rc, $this->dbObjectNamer);
 		$queries = array();
 		foreach( $rows as $row ) {
+			if( count($row) == 0 ) {
+				$queries[] = new EarthIT_Storage_StorageQuery(
+					"INSERT INTO {table} DEFAULT VALUES RETURNING {$resultSelectSql}",
+					$params, $options[EarthIT_Storage_ItemSaver::RETURN_SAVED]);
+				continue;
+			}
+			
 			$rowParams = $params;
 			
 			$pkColumnValues = array();
@@ -261,17 +270,26 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 				}
 			}
 			
-			$resultSelectSql = implode(', ',$outputColumnValueSqls);
-
-			$updateyPart = $doUpdate ?
+			if( count($conditions) == 0 ) {
+				// Then there's no primary key data to possibly collide with.
+				// 'Any existing records?' is always false and this
+				// operation just becomes an INSERT.
+				$conditions[] = 'FALSE';
+			}
+			
+			$updateyPart = (count($sets) && $doUpdate) ?
+				// Select updated records:
 				"UPDATE {table} SET\n".
 				"\t".implode(",\n\t\t",$sets)."\n".
 				"WHERE ".implode("\n\t  AND",$conditions)."\n".
 				"RETURNING {$resultSelectSql}" :
+				// If not updating records (either because ODK_KEEP or
+				// because there's no non-PK fields being updated),
+				// then this will just select whatever existing records:
 				"SELECT {$resultSelectSql}\n".
 				"FROM {table}\n".
 				"WHERE ".implode("\n\t  AND",$conditions);
-
+			
 			$sql =
 				"WITH los_updatos AS (\n".
 				"\t".str_replace("\n","\n\t",$updateyPart)."\n".

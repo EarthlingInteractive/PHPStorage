@@ -93,6 +93,48 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 			'e-mail address' => null
 		), EarthIT_Storage_Util::first($fetchedUsers));
 	}
+
+	public function testPatchNothing() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		$newUsers = $this->storage->saveItems( array(
+			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
+			array('username' => 'Bob Jones', 'passhash' => 'asd125'),
+		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true));
+		
+		$userUpdates = array();
+		foreach( $newUsers as $newUser ) {
+			$userUpdates[] = array('ID'=>$newUser['ID']);
+		}
+		
+		$updatedUsers = $this->storage->saveItems(
+			$userUpdates, $userRc,
+			array(
+				EarthIT_Storage_ItemSaver::RETURN_SAVED => true,
+				EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY => EarthIT_Storage_ItemSaver::ODK_UPDATE)
+		);
+		
+		// That shouldn't have changed anything, and it shouldn't've caused a crash
+	}
+	
+	public function testPatchNothinger() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		$userUpdates = array();
+		for( $i=0; $i<5; ++$i ) {
+			$userUpdates[] = array();
+		}
+		
+		$updatedUsers = $this->storage->saveItems(
+			$userUpdates, $userRc,
+			array(
+				EarthIT_Storage_ItemSaver::RETURN_SAVED => true,
+				EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY => EarthIT_Storage_ItemSaver::ODK_UPDATE)
+		);
+		
+		$this->assertEquals(5, count($updatedUsers));
+		$this->assertEquals(5, count(self::keyById($updatedUsers)));
+	}
 	
 	public function testUpsertWithReturn() {
 		$userRc = $this->registry->schema->getResourceClass('user');

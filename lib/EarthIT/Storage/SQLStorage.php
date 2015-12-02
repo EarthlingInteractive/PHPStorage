@@ -47,7 +47,6 @@ class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_S
 		EarthIT_Storage_Util::defaultSaveItemsOptions($options);
 		
 		$queries = $this->sqlGenerator->makeBulkSaveQueries( $itemData, $rc, $options );
-		
 		$resultRows = array();
 		
 		foreach( $queries as $q ) {
