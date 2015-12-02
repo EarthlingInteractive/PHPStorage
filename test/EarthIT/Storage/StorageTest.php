@@ -234,6 +234,38 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$this->assertEquals($newUsers, $replacedUsers);
 	}
 	
+	public function testInsertNothing() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		$insertedUsers = $this->storage->saveItems(
+			array(), $userRc,
+			array(
+				EarthIT_Storage_ItemSaver::RETURN_SAVED => true,
+				EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY => EarthIT_Storage_ItemSaver::ODK_UNDEFINED)
+		);
+		
+		$this->assertEquals(0, count($insertedUsers));
+	}
+	
+	public function testInsertEmptyRecrords() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		$userUpdates = array();
+		for( $i=0; $i<5; ++$i ) {
+			$userUpdates[] = array();
+		}
+		
+		$insertedUsers = $this->storage->saveItems(
+			$userUpdates, $userRc,
+			array(
+				EarthIT_Storage_ItemSaver::RETURN_SAVED => true,
+				EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY => EarthIT_Storage_ItemSaver::ODK_UNDEFINED)
+		);
+		
+		$this->assertEquals(5, count($insertedUsers));
+		$this->assertEquals(5, count(self::keyById($insertedUsers)));
+	}
+	
 	public function testGetItems() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		

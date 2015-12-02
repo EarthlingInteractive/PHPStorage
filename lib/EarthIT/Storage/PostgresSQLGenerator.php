@@ -314,9 +314,8 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		}; unset($item);
 		$fieldsToStore = self::ensureSameFieldsGivenForAllItems( $itemData, $storableFields);
 		
-		if( count($fieldsToStore) == 0 ) {
-			throw new Exception("Can't store no columns.");
-		}
+		$params = array();
+		$params['table'] = EarthIT_DBC_SQLExpressionUtil::tableExpression($rc, $this->dbObjectNamer);
 		
 		$paramCounter = 0;
 		$columnNameParams = array();
@@ -333,6 +332,27 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 			$columnNameParam = $columnNameParams[$fn];
 			$toStoreColumnNamePlaceholders[] = $columnNamePlaceholders[$fn];
 		}
+		
+		$columnDbExternalValueSqls = array();
+		if( $returnSaved ) {
+			foreach( $storableFields as $fn=>$f ) {
+				$t = $this->dbInternalToExternalValueSql($f, $rc, $columnNamePlaceholders[$fn]);
+				if( $t != $columnNamePlaceholders[$fn] ) $t .= " AS ".$columnNamePlaceholders[$fn];
+				$columnDbExternalValueSqls[$fn] = $t;
+			}
+		}
+		
+		if( count($fieldsToStore) == 0 ) {
+			// INSERT INTO ... DEFAULT VALUES doesn't seem to have a bulk form,
+			// so we'll have to make multiple queries.
+			// Fortunately they're pretty simple queries (actually just the same one repeated).
+			return array_fill( 0, count($itemData),
+				new EarthIT_Storage_StorageQuery(
+					"INSERT INTO {table} DEFAULT VALUES".
+					($returnSaved ? "\nRETURNING ".implode(', ',$columnDbExternalValueSqls) : ''),
+					$params, $returnSaved));
+		}
+		
 		$valueRows = array();
 		foreach( $itemData as $item ) {
 			$valueSqls = array();
@@ -348,18 +368,11 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 			"INSERT INTO {table}\n".
 			"(".implode(", ", $toStoreColumnNamePlaceholders).") VALUES\n".
 			implode(",\n", $valueRows);
+		echo $sql, "\n";
 		
 		if( $returnSaved ) {
-			$columnDbExternalValueSqls = array();
-			foreach( $storableFields as $fn=>$f ) {
-				$t = $this->dbInternalToExternalValueSql($f, $rc, $columnNamePlaceholders[$fn]);
-				if( $t != $columnNamePlaceholders[$fn] ) $t .= " AS ".$columnNamePlaceholders[$fn];
-				$columnDbExternalValueSqls[$fn] = $t;
-			}
 			$sql .= "\nRETURNING ".implode(', ',$columnDbExternalValueSqls);
 		}
-		
-		$params['table'] = EarthIT_DBC_SQLExpressionUtil::tableExpression($rc, $this->dbObjectNamer);
 		
 		return array( new EarthIT_Storage_StorageQuery($sql, $params, $returnSaved) );
 	}
