@@ -368,7 +368,6 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 			"INSERT INTO {table}\n".
 			"(".implode(", ", $toStoreColumnNamePlaceholders).") VALUES\n".
 			implode(",\n", $valueRows);
-		echo $sql, "\n";
 		
 		if( $returnSaved ) {
 			$sql .= "\nRETURNING ".implode(', ',$columnDbExternalValueSqls);
