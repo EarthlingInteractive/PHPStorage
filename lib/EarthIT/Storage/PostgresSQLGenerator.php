@@ -281,14 +281,14 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 				// Select updated records:
 				"UPDATE {table} SET\n".
 				"\t".implode(",\n\t\t",$sets)."\n".
-				"WHERE ".implode("\n\t  AND",$conditions)."\n".
+				"WHERE ".implode("\n\t  AND ",$conditions)."\n".
 				"RETURNING {$resultSelectSql}" :
 				// If not updating records (either because ODK_KEEP or
 				// because there's no non-PK fields being updated),
 				// then this will just select whatever existing records:
 				"SELECT {$resultSelectSql}\n".
 				"FROM {table}\n".
-				"WHERE ".implode("\n\t  AND",$conditions);
+				"WHERE ".implode("\n\t  AND ",$conditions);
 			
 			$sql =
 				"WITH los_updatos AS (\n".
