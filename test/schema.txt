@@ -7,6 +7,7 @@ import 'http://ns.nuke24.net/Schema/DataTypeTranslation/regex'
 import 'http://ns.nuke24.net/Schema/Application/hasADatabaseTable'
 import 'http://ns.nuke24.net/Schema/Application/hasARestService'
 import 'http://ns.nuke24.net/Schema/Application/membersArePublic'
+import 'http://ns.nuke24.net/Schema/Types/Integer'
 import 'http://ns.nuke24.net/Schema/RDB/Schema'
 import 'http://ns.nuke24.net/Schema/RDB/Sequence'
 import 'http://ns.nuke24.net/Schema/RDB/initialValue'
@@ -16,9 +17,10 @@ import 'http://ns.nuke24.net/Schema/RDB/isInNamespace'
 import 'http://ns.nuke24.net/Schema/RDB/isSelfKeyed'
 import 'http://www.w3.org/2000/01/rdf-schema#isSubclassOf' as 'extends'
 
-class 'integer' :
-        SQL type @ "INT" :
-        PHP type @ "int" : JSON type @ "number"
+extend 'integer' :
+	SQL type @ "INT" :
+	PHP type @ "int" : JSON type @ "number" :
+	regex @ "[+-]?\\d+"
 class 'unsigned integer' : extends(integer) :
 	SQL type @ "INT UNSIGNED" : regex @ "\\d+"
 class 'boolean' :
@@ -62,6 +64,12 @@ class 'organization' : SRC : members are public {
 	ID : EIPK
 	name : string
 	office location : SRID 4326 point : nullable
+}
+
+class 'a b c' : SRC {
+	a : EIPK
+	b : integer : key(primary)
+	c : text
 }
 
 class 'user organization attachment' : SRC : self-keyed {

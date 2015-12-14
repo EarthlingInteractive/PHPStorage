@@ -6,9 +6,12 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 	
 	protected $storage;
 	
-	protected static function keyById(array $things) {
+	protected static function keyById(array $things, EarthIT_Schema_ResourceClass $rc=null) {
 		$keyed = array();
-		foreach( $things as $t ) $keyed[$t['ID']] = $t;
+		foreach( $things as $t ) {
+			$id = $rc === null ? $t['ID'] : EarthIT_Storage_Util::itemId($t, $rc);
+			$keyed[$id] = $t;
+		}
 		return $keyed;
 	}
 	
@@ -364,6 +367,36 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		)));
 		
 		$this->assertEquals(2, count($newUsers));
+	}
+	
+	public function testUpdateThingWithCompositeKey() {
+		$abcRc = $this->registry->schema->getResourceClass('a b c');
+		$savedAbcs = self::keyById($this->storage->saveItems(array(
+			array('b'=>12, 'c'=>'Text!'),
+			array('b'=>13, 'c'=>'Text!'),
+		), $abcRc, array(
+			EarthIT_Storage_ItemSaver::RETURN_SAVED => true,
+		)), $abcRc);
+
+		$this->assertEquals(2, count($savedAbcs));
+		
+		$alteredAbcs = array();
+		foreach( $savedAbcs as $k=>$savedAbc ) {
+			$alteredAbcs[$k] = array('c' => 'Different Text!') + $savedAbc;
+		}
+		
+		$updatedAbcs = self::keyById($this->storage->saveItems($alteredAbcs, $abcRc, array(
+			EarthIT_Storage_ItemSaver::RETURN_SAVED => true,
+			EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY => EarthIT_Storage_ItemSaver::ODK_UPDATE,
+		)), $abcRc);
+		$this->assertEquals( array_keys($savedAbcs), array_keys($updatedAbcs) );
+		$this->assertEquals( 2, count($updatedAbcs) );
+		
+		$fetchedAbcs = self::keyById(EarthIT_Storage_Util::getItemsById(array_keys($savedAbcs), $abcRc, $this->storage), $abcRc);
+		$this->assertEquals(2, count($fetchedAbcs));
+		foreach( $fetchedAbcs as $fetched ) {
+			$this->assertEquals('Different Text!', $fetched['c']);
+		}
 	}
 	
 	public function testGeoJsonStorageAndRetrieval() {
