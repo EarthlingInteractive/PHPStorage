@@ -27,6 +27,10 @@ class EarthIT_Storage_Filter_ExactMatchFieldValueFilter implements EarthIT_Stora
 		return $this->field;
 	}
 	
+	public function getValue() {
+		return $this->value;
+	}
+	
 	/** @override */
 	public function toSql( $tableSql, EarthIT_DBC_Namer $dbObjectNamer, EarthIT_DBC_ParamsBuilder $params ) {
 		$columnName = $dbObjectNamer->getColumnName($this->rc, $this->field);
