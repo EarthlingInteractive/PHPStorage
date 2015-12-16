@@ -403,7 +403,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		$conditions = $search->getFilter()->toSql('stuff', $this->dbObjectNamer,$PB);
 		
 		// TODO: only select certain fields if fieldsOfInterest given
-		$selects = $this->makeDbExternalFieldValueSqls($rc->getFields(), $rc, 'stuff', $PB);
+		$selects = $this->makeDbExternalFieldValueSqls(EarthIT_Storage_Util::storableFields($rc), $rc, 'stuff', $PB);
 		$selectSqls = EarthIT_Storage_Util::formatSelectComponents($selects, $PB);
 		if( count($selectSqls) == 0 ) {
 			throw new Exception("Can't select zero stuff.");
