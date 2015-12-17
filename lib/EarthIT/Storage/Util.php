@@ -82,7 +82,9 @@ class EarthIT_Storage_Util
 	}
 	
 	public static function itemId( array $item, EarthIT_Schema_ResourceClass $rc ) {
-		$pk = $rc->getPrimaryKey();
+		$indexes = $rc->getIndexes();
+		if( !isset($indexes['primary']) ) return null;
+		$pk = $indexes['primary'];
 		if( $pk === null or count($pk->getFieldNames()) == 0 ) return null;
 		
 		$fields = $rc->getFields();
