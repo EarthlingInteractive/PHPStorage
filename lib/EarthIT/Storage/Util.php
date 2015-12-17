@@ -81,6 +81,18 @@ class EarthIT_Storage_Util
 		return implode("-", $parts);
 	}
 	
+	/**
+	 * Returns a scalar value representing the item's ID,
+	 * or null if it does not have one.
+	 * 
+	 * If the class's primary key is a single scalar field,
+	 * the value of that field is returned.
+	 * 
+	 * If it has a composite key, this returns a string composed of the
+	 * component values stringified and joined with "-".
+	 * 
+	 * @return scalar|null
+	 */
 	public static function itemId( array $item, EarthIT_Schema_ResourceClass $rc ) {
 		$indexes = $rc->getIndexes();
 		if( !isset($indexes['primary']) ) return null;
