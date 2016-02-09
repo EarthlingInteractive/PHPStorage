@@ -20,10 +20,13 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$this->storage = $this->makeStorage();
 	}
 	
+	protected abstract function preallocateEntityIds($count);
+	protected abstract function newEntityId();
+	
 	public function testInsertFullyWithReturn() {
-		$this->registry->storageHelper->preallocateEntityIds(2);
-		$entityId0 = $this->registry->storageHelper->newEntityId();
-		$entityId1 = $this->registry->storageHelper->newEntityId();
+		$this->preallocateEntityIds(2);
+		$entityId0 = $this->newEntityId();
+		$entityId1 = $this->newEntityId();
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
 		$newUsers = $this->storage->saveItems( array(
@@ -35,9 +38,9 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 	}
 
 	public function testInsertFullyWithStrangelyOrderedFieldsAndReturn() {
-		$this->registry->storageHelper->preallocateEntityIds(2);
-		$entityId0 = $this->registry->storageHelper->newEntityId();
-		$entityId1 = $this->registry->storageHelper->newEntityId();
+		$this->preallocateEntityIds(2);
+		$entityId0 = $this->newEntityId();
+		$entityId1 = $this->newEntityId();
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
 		$newUsers = self::keyById($this->storage->saveItems( array(
@@ -306,6 +309,24 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$this->assertEquals($newUsers, $foundItems);
 	}
 
+	public function testGetItemsWithGeFilter() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		$newUsers = self::keyById($this->storage->saveItems( array(
+			array('username' => 'Frodo Baggins', 'passhash' => 'asd123'),
+			array('username' => 'Jean Wheasler', 'passhash' => 'asd125'),
+			array('username' => 'Renee Oberhart', 'passhash' => 'asd125'),
+		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true)));
+		
+		$newUserIds = array_keys($newUsers);
+		
+		$search = EarthIT_Storage_Util::makeSearch($userRc, 'ID=ge:'.$newUserIds[1]);
+		$foundItems = self::keyById($this->storage->searchItems($search));
+		$expectedResultingUsers = $newUsers;
+		unset($expectedResultingUsers[$newUserIds[0]]);
+		$this->assertEquals($expectedResultingUsers, $foundItems);
+	}
+	
 	public function testGetSpecificItemById() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		

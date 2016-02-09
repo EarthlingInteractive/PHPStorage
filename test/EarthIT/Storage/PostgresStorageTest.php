@@ -6,6 +6,14 @@ class EarthIT_Storage_PostgresStorageTest extends EarthIT_Storage_StorageTest
 		return $this->registry->postgresStorage;
 	}
 	
+	protected function preallocateEntityIds($count) {
+		$this->registry->storageHelper->preallocateEntityIds($count);
+	}
+	
+	protected function newEntityId() {
+		return $this->registry->storageHelper->newEntityId();
+	}
+	
 	public function testInsertSimple() {
 		$this->registry->storageHelper->preallocateEntityIds(2);
 		$entityId0 = $this->registry->storageHelper->newEntityId();

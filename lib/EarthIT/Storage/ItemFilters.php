@@ -62,6 +62,12 @@ class EarthIT_Storage_ItemFilters
 			$comparisonOp = EarthIT_Storage_Filter_InListComparisonOp::getInstance();
 			$vExp = new EarthIT_Storage_Filter_ListValueExpression($values);
 			break;
+		case 'lt': case 'le':
+		case 'ge': case 'gt':
+			$comparisonOp = EarthIT_Storage_Filter_ComparisonOps::get($scheme);
+			$value = EarthIT_Storage_Util::cast($pattern, $field->getType()->getPhpTypeName());
+			$vExp = new EarthIT_Storage_Filter_ScalarValueExpression($value);
+			break;
 		case 'like':
 			return new EarthIT_Storage_Filter_PatternFieldValueFilter($field, $rc, $pattern, true);
 		default:
