@@ -421,11 +421,11 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 			throw new Exception("Don't know how to order based on a ".get_class($comparator));
 		}
 		
-		$limitStuff = "";
 		$skip  = $search->getSkip();
 		$limit = $search->getLimit();
-		if( $skip  ) throw new Exception("Doesn't support skip yet");
-		if( $limit ) throw new Exception("Doesn't support limit yet");
+		$limitStuff = '';
+		if( $limit !== null ) $limitStuff .= "LIMIT ".(int)$limit;
+		if( $skip !== null ) $limitStuff .= "OFFSET ".(int)$skip;
 		
 		return EarthIT_DBC_SQLExpressionUtil::expression(
 			"SELECT\n\t".implode(",\n\t", $selectSqls)."\n".

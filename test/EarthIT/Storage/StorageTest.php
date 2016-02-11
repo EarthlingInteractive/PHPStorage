@@ -294,6 +294,32 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$this->assertEquals(2, count($fetchedUsers));
 	}
 	
+	public function testGetItemsWithLimit() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		// BALEET THEM ALL!
+		$this->storage->deleteItems( $userRc, EarthIT_Storage_ItemFilters::emptyFilter() );
+		
+		// And now there should be ZERO USERS!
+		$fetchedUsers = $this->storage->searchItems(new EarthIT_Storage_Search($userRc));
+		$this->assertEquals(0, count($fetchedUsers));
+		
+		$newUsers = $this->storage->saveItems( array(
+			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
+			array('username' => 'Bob Jones', 'passhash' => 'asd127'),
+			array('username' => 'Bill Bradley', 'passhash' => 'asd127'),
+			array('username' => 'Bill Clinton', 'passhash' => 'asd125'),
+		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true));
+		
+		$newUsers = self::keyById($newUsers);
+		
+		// So now there should be TOO USERS returned when we GET SOME OF THAM!
+		$fetchedUsers = $this->storage->searchItems(new EarthIT_Storage_Search($userRc, null, null, 1, 2));
+		$this->assertEquals(2, count($fetchedUsers));
+		// They should be BOB JONES and BILL BRADLEY!
+		foreach( $fetchedUsers as $fu ) $this->assertEquals('asd127', $fu['passhash']);
+	}
+	
 	public function testGetSpecificItemsWithInFilter() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
