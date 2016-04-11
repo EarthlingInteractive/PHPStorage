@@ -8,8 +8,8 @@ class EarthIT_Storage_Filter_NegatedItemFilter implements EarthIT_Storage_ItemFi
 		$this->negatedFilter = $negatedFilter;
 	}
 	
-	public function getNegatedFilters() {
-		return $this->negatedFilters;
+	public function getNegatedFilter() {
+		return $this->negatedFilter;
 	}
 	
 	public function toSql( $tableSql, EarthIT_DBC_Namer $dbObjectNamer, EarthIT_DBC_ParamsBuilder $params ) {

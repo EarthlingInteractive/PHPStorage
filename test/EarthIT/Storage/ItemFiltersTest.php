@@ -11,4 +11,12 @@ class EarthIT_Storage_ItemFiltersTest extends EarthIT_Storage_TestCase
 		$this->assertTrue( $filter->getValueExpression() instanceof EarthIT_Storage_Filter_ListValueExpression );
 		$this->assertTrue( $filter->getValueExpression()->getValues() === array('Frodo Baggins','Jean Wheasler') );
 	}
+	
+	public function testParseNegatingFilter() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		$filter = EarthIT_Storage_ItemFilters::parseMulti( array('username'=>'not:in:Frodo Baggins,Jim Henson'), $userRc );
+		$this->assertTrue( $filter instanceof EarthIT_Storage_Filter_NegatedItemFilter );
+		$this->assertTrue( $filter->getNegatedFilter() instanceof EarthIT_Storage_Filter_FieldValueComparisonFilter );
+	}
 }
