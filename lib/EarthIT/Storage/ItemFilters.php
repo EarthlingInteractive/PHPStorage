@@ -51,6 +51,10 @@ class EarthIT_Storage_ItemFilters
 	
 	public static function fieldValueFilter( $scheme, $pattern, EarthIT_Schema_Field $field, EarthIT_Schema_ResourceClass $rc ) {
 		switch( $scheme ) {
+		case 'not':
+			// Oh look this is kind of a silly way to do it:
+			$toBeNegated = self::parsePattern( $field->getName(), $pattern, $rc );
+			return new EarthIT_Storage_Filter_NegatedItemFilter($toBeNegated);
 		case 'eq':
 			$value = EarthIT_Storage_Util::cast($pattern, $field->getType()->getPhpTypeName());
 			return new EarthIT_Storage_Filter_ExactMatchFieldValueFilter($field, $rc, $value);
@@ -78,6 +82,7 @@ class EarthIT_Storage_ItemFilters
 		return new EarthIT_Storage_Filter_FieldValueComparisonFilter($field, $rc, $comparisonOp, $vExp);
 	}
 	
+	// TODO: What's nameMap?  Maybe remove it?
 	public static function parsePattern( $fieldName, $pattern, EarthIT_Schema_ResourceClass $rc, array $nameMap=array() ) {
 		$field = $rc->getField($fieldName);
 		if( $field === null ) throw new Exception("Error while parsing filter string '$filterString': no such field as '{$p[0]}'");
@@ -101,6 +106,7 @@ class EarthIT_Storage_ItemFilters
 		return self::fieldValueFilter( $scheme, $pattern, $field, $rc );
 	}
 	
+	// TODO: What's nameMap?  Maybe remove it?
 	public static function parse( $filterString, EarthIT_Schema_ResourceClass $rc, array $nameMap=array() ) {
 		if( $filterString instanceof EarthIT_Storage_ItemFilter ) return $filterString;
 		
