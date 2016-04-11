@@ -56,7 +56,8 @@ class EarthIT_Storage_ItemFilters
 			return new EarthIT_Storage_Filter_ExactMatchFieldValueFilter($field, $rc, $value);
 		case 'in':
 			$values = array();
-			foreach( explode(',',$pattern) as $p ) {
+			$patternValues = is_array($pattern) ? $pattern : explode(',',$pattern);
+			foreach( $patternValues as $p ) {
 				$values[] = EarthIT_Storage_Util::cast($p, $field->getType()->getPhpTypeName());
 			}
 			$comparisonOp = EarthIT_Storage_Filter_InListComparisonOp::getInstance();
@@ -77,25 +78,35 @@ class EarthIT_Storage_ItemFilters
 		return new EarthIT_Storage_Filter_FieldValueComparisonFilter($field, $rc, $comparisonOp, $vExp);
 	}
 	
+	public static function parsePattern( $fieldName, $pattern, EarthIT_Schema_ResourceClass $rc, array $nameMap=array() ) {
+		$field = $rc->getField($fieldName);
+		if( $field === null ) throw new Exception("Error while parsing filter string '$filterString': no such field as '{$p[0]}'");
+		
+		if( is_scalar($pattern) ) {
+			$patternParts = explode(':', $pattern, 2);
+			if( count($patternParts) == 1 ) {
+				$pattern = $pattern;
+				$scheme = strpos($pattern,'*') === false ? 'eq' : 'like';
+			} else {
+				$pattern = $patternParts[1];
+				$scheme = $patternParts[0];
+			}
+		} else if( is_array($pattern) ) {
+			$scheme = 'in';
+			$pattern = $pattern;
+		} else {
+			throw new Exception("Don't know how to interpret ".gettype($pattern)." as field value pattern.");
+		}
+		
+		return self::fieldValueFilter( $scheme, $pattern, $field, $rc );
+	}
+	
 	public static function parse( $filterString, EarthIT_Schema_ResourceClass $rc, array $nameMap=array() ) {
 		if( $filterString instanceof EarthIT_Storage_ItemFilter ) return $filterString;
 		
 		$p = explode('=', $filterString, 2);
 		if( count($p) != 2 ) throw new Exception("Not enough '='-separated parts in filter string: '$filterString'");
-		$field = $rc->getField($p[0]);
-		if( $field === null ) throw new Exception("Error while parsing filter string '$filterString': no such field as '{$p[0]}'");
-		
-		$valueStr = $p[1];
-		$valueStrParts = explode(':', $valueStr, 2);
-		if( count($valueStrParts) == 1 ) {
-			$pattern = $valueStr;
-			$scheme = strpos($pattern,'*') === false ? 'eq' : 'like';
-		} else {
-			$pattern = $valueStrParts[1];
-			$scheme = $valueStrParts[0];
-		}
-		
-		return self::fieldValueFilter( $scheme, $pattern, $field, $rc );
+		return self::parsePattern($p[0], $p[1], $rc, $nameMap);
 	}
 	
 	/**
@@ -113,8 +124,12 @@ class EarthIT_Storage_ItemFilters
 		}
 		
 		foreach( $filters as $k=>&$f ) {
-			if( is_string($k) ) $f = "{$k}={$f}"; // ['ID' => 'foo'] = ['ID=foo']
-			$f = self::parse($f, $rc);
+			if( is_string($k) ) {
+				//$f = "{$k}={$f}"; // ['ID' => 'foo'] = ['ID=foo']
+				$f = self::parsePattern($k, $f, $rc);
+			} else {
+				$f = self::parse($f, $rc);
+			}
 		}; unset($f);
 		
 		if( count($filters) == 1 ) return EarthIT_Storage_Util::first($filters);

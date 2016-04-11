@@ -335,6 +335,40 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$this->assertEquals($newUsers, $foundItems);
 	}
 
+	public function testGetSpecificItemsWithMultiFieldInFilter() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		$newUsers = self::keyById($this->storage->saveItems( array(
+			array('username' => 'Frodo Baggins 2', 'passhash' => 'asd123'),
+			array('username' => 'Frodo Baggins 2', 'passhash' => 'asd125'),
+			array('username' => 'Bill Pete 2'    , 'passhash' => 'asd123'),
+			array('username' => 'Jean Wheasler 2', 'passhash' => 'asd123'),
+			array('username' => 'Jean Wheasler 2', 'passhash' => 'asd125'),
+			array('username' => 'Jean Wheasler 2', 'passhash' => 'asd125'), // repeated yes!
+		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true)));
+		
+		$newUserIds = array_keys($newUsers);
+		
+		$search = EarthIT_Storage_Util::makeSearch($userRc,
+			new EarthIT_Storage_Filter_MultiFieldValuesInListFilter(
+				array($userRc->getField('username'), $userRc->getField('passhash')),
+				$userRc,
+				array(array('Frodo Baggins 2','asd123'), array('Jean Wheasler 2','asd125'))
+			)
+		);
+		$foundItems = self::keyById($this->storage->searchItems($search));
+		$this->assertEquals(3, count($foundItems));
+		foreach( $foundItems as $item ) {
+			if( $item['username'] === 'Frodo Baggins 2' ) {
+				$this->assertEquals('asd123', $item['passhash']);
+			} else if( $item['username'] === 'Jean Wheasler 2' ) {
+				$this->assertEquals('asd125', $item['passhash']);
+			} else {
+				$this->fail("Got unexpected username: {$item['username']}");
+			}
+		}
+	}
+
 	public function testGetItemsWithGeFilter() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		

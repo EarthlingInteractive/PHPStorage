@@ -23,9 +23,9 @@ class EarthIT_Storage_Filter_FieldValueComparisonFilter implements EarthIT_Stora
 		$this->valueExpression = $vExp;
 	}
 	
-	public function getField() {
-		return $this->field;
-	}
+	public function getField() { return $this->field; }
+	public function getComparisonOp() { return $this->comparisonOp; }
+	public function getValueExpression() { return $this->valueExpression; }
 	
 	/**
 	 * @param string $tableSql SQL fragment giving the table name or alias

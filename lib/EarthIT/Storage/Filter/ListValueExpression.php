@@ -2,23 +2,27 @@
 
 class EarthIT_Storage_Filter_ListValueExpression implements EarthIT_Storage_Filter_ValueExpression
 {
-	protected $value;
+	protected $values;
 	
-	public function __construct( array $value ) {
-		$this->value = $value;
+	public function __construct( array $values ) {
+		$this->values = $values;
 	}
 	
 	/** @override */
 	public function toSql( EarthIT_DBC_ParamsBuilder $params ) {
 		$s = array();
-		foreach( $this->value as $v ) {
+		foreach( $this->values as $v ) {
 			$s[] = '{'.$params->bind($v).'}';
 		}
 		return '('.implode(', ',$s).')';
 	}
 	
+	public function getValues() {
+		return $this->values;
+	}
+	
 	/** @override */
 	public function evaluate() {
-		return $this->value;
+		return $this->values;
 	}
 }
