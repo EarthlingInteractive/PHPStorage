@@ -42,7 +42,7 @@ class EarthIT_Storage_Filter_SubItemFilter implements EarthIT_Storage_ItemFilter
 		$originFieldNames = $this->ref->getOriginFieldNames();
 		$targetFieldNames = $this->ref->getTargetFieldNames();
 		
-		$joinConditionSqls = [];
+		$joinConditionSqls = array();
 		for( $i=0; $i<count($targetFieldNames); ++$i ) {
 			$targetCol = $dbObjectNamer->getColumnName($this->targetRc, $this->targetRc->getField($targetFieldNames[$i]));
 			$originCol = $dbObjectNamer->getColumnName($this->originRc, $this->originRc->getField($originFieldNames[$i]));
@@ -69,7 +69,7 @@ class EarthIT_Storage_Filter_SubItemFilter implements EarthIT_Storage_ItemFilter
 		if( $this->refIsPlural ) {
 			$subItems = $item[$this->refName];
 		} else {
-			$subItems = $item[$this->refName] === null ? [] : [$item[$this->refName]];
+			$subItems = $item[$this->refName] === null ? array() : array($item[$this->refName]);
 		}
 		
 		foreach( $subItems as $subItem ) {
