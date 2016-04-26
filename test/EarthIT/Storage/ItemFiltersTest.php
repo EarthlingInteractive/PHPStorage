@@ -20,6 +20,21 @@ class EarthIT_Storage_ItemFiltersTest extends EarthIT_Storage_TestCase
 		$this->assertTrue( $filter->getNegatedFilter() instanceof EarthIT_Storage_Filter_FieldValueComparisonFilter );
 	}
 	
+	public function testFuzzyMatchParseFilter() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		$filter = EarthIT_Storage_ItemFilters::parseMulti( array('userName'=>'not:in:Frodo Baggins,Jim Henson'), $userRc, null, true );
+		$this->assertTrue( $filter instanceof EarthIT_Storage_Filter_NegatedItemFilter );
+		
+		$caught = false;
+		try {
+			$filter = EarthIT_Storage_ItemFilters::parseMulti( array('userName'=>'not:in:Frodo Baggins,Jim Henson'), $userRc, null, false );
+		} catch( Exception $e ) {
+			$caught = true;
+		}
+		$this->assertTrue( $caught, "non-fuzzy parsing with 'userName' field should have failed" );
+	}
+	
 	public function testParseSubItemFilter() {
 		$orgRc = $this->registry->schema->getResourceClass('organization');
 		$filter0 = EarthIT_Storage_ItemFilters::parseMulti(
