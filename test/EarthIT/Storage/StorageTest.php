@@ -20,6 +20,14 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		$this->storage = $this->makeStorage();
 	}
 	
+	protected function clearData() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		$uoaRc = $this->registry->schema->getResourceClass('user organization attachment');
+		
+		$this->storage->deleteItems( $uoaRc, EarthIT_Storage_ItemFilters::emptyFilter() );
+		$this->storage->deleteItems( $userRc, EarthIT_Storage_ItemFilters::emptyFilter() );
+	}
+	
 	protected abstract function preallocateEntityIds($count);
 	protected abstract function newEntityId();
 	
@@ -275,8 +283,7 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 	public function testGetItems() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
-		// BALEET THEM ALL!
-		$this->storage->deleteItems( $userRc, EarthIT_Storage_ItemFilters::emptyFilter() );
+		$this->clearData();
 		
 		// And now there should be ZERO USERS!
 		$fetchedUsers = $this->storage->searchItems(new EarthIT_Storage_Search($userRc));
@@ -297,8 +304,7 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 	public function testGetItemsWithLimit() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
-		// BALEET THEM ALL!
-		$this->storage->deleteItems( $userRc, EarthIT_Storage_ItemFilters::emptyFilter() );
+		$this->clearData();
 		
 		// And now there should be ZERO USERS!
 		$fetchedUsers = $this->storage->searchItems(new EarthIT_Storage_Search($userRc));
