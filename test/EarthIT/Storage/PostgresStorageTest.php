@@ -66,7 +66,7 @@ class EarthIT_Storage_PostgresStorageTest extends EarthIT_Storage_StorageTest
 			'user organization attachments',
 			true,
 			new EarthIT_Schema_Reference(
-				'user organization attachment', ['ID'], ['organization ID']),
+				'user organization attachment', array('ID'), array('organization ID')),
 			$orgRc, $uoaRc,
 			new EarthIT_Storage_Filter_ExactMatchFieldValueFilter(
 				$uoaRc->getField('user ID'),
