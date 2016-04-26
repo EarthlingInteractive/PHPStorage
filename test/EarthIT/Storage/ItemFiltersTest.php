@@ -35,11 +35,13 @@ class EarthIT_Storage_ItemFiltersTest extends EarthIT_Storage_TestCase
 		$this->assertTrue( $caught, "non-fuzzy parsing with 'userName' field should have failed" );
 	}
 	
-	public function testParseSubItemFilter() {
+	public function _testParseSubItemFilter( $fuzz ) {
 		$orgRc = $this->registry->schema->getResourceClass('organization');
 		$filter0 = EarthIT_Storage_ItemFilters::parseMulti(
-			array('user organization attachments.user.username'=>'not:in:Frodo Baggins,Jim Henson'),
-			$orgRc, $this->registry->schema );
+			array(
+				($fuzz ? 'user-organization-attachments' : 'user organization attachments').
+					'.user.username' => 'not:in:Frodo Baggins,Jim Henson'),
+			$orgRc, $this->registry->schema, true );
 		
 		$this->assertTrue( $filter0 instanceof EarthIT_Storage_Filter_SubItemFilter );
 		$this->assertEquals( 'user organization attachments', $filter0->referenceName );
@@ -56,5 +58,26 @@ class EarthIT_Storage_ItemFiltersTest extends EarthIT_Storage_TestCase
 		$filter2 = $filter1->getTargetFilter();
 		
 		$this->assertTrue( $filter2 instanceof EarthIT_Storage_Filter_NegatedItemFilter );
+	}
+
+	public function testParseSubItemFilter() {
+		$this->_testParseSubItemFilter( false );
+	}
+	public function testParseSubItemFilterFuzzy() {
+		$this->_testParseSubItemFilter( true );
+	}
+	public function testParseSubItemFiltersInvalidNonFuzzy() {
+		$caught = false;
+		try {
+			EarthIT_Storage_ItemFilters::parseMulti(
+				array('user-organization-attachments.user.username' => 'not:in:Frodo Baggins,Jim Henson'),
+				$orgRc, $this->registry->schema, true );
+		} catch( Exception $e ) {
+			$caught = true;
+		}
+		
+		$this->assertTrue(
+			$caught, "non-fuzzy parsing of ".
+			"'user-organization-attachments.user.username' filter should have thrown an exception");
 	}
 }
