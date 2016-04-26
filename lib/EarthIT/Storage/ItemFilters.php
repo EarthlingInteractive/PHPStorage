@@ -82,8 +82,122 @@ class EarthIT_Storage_ItemFilters
 		return new EarthIT_Storage_Filter_FieldValueComparisonFilter($field, $rc, $comparisonOp, $vExp);
 	}
 	
-	// TODO: What's nameMap?  Maybe remove it?
-	public static function parsePattern( $fieldName, $pattern, EarthIT_Schema_ResourceClass $rc, array $nameMap=array() ) {
+	// TODO: Maybe move this stuff out to a utility class in Schema.
+	// CMIPREST also needs to do this stuff.
+	
+	const COLLECTION_NAME = 'http://ns.earthit.com/CMIPREST/collectionName';
+	const INVERSE_NAME = 'http://ns.earthit.com/CMIPREST/inverseName';
+	const INVERSE_COLLECTION_NAME = 'http://ns.earthit.com/CMIPREST/inverseCollectionName';
+	
+	protected static function maybeMinimize( $name, $minimize ) {
+		return $minimize ? EarthIT_Schema_WordUtil::minimize($name) : $name;
+	}
+	
+	protected static function findReference(
+		$refRef, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema $schema=null,
+		&$refName=null, &$refIsPlural=null, $fuzzyMatch=true
+	) {
+		$refRef = self::maybeMinimize($refRef, $fuzzyMatch);
+		
+		$refs = $rc->getReferences();
+		
+		if( $fuzzyMatch ) {
+			foreach( $refs as $k=>$ref ) {
+				if( EarthIT_Schema_WordUtil::minimize($k) == $refRef ) {
+					$refName = $k;
+					$refIsPlural = false;
+					return $ref;
+				}
+			}
+		} else {
+			if( isset($refs[$refRef]) ) {
+				$refIsPlural = false;
+				$refName = $refRef;
+				return $refs[$refName];
+			}
+		}
+		
+		if( $schema !== null ) {
+			$rcs = $schema->getResourceClasses();
+			
+			// Look for one based on explicit inverse name
+			foreach( $rcs as $trcName=>$trc ) {
+				foreach( $rc->getReferences() as $ref ) {
+					$refInverseName = $inverseRef->getFirstPropertyValue(EarthIT_CMIPREST_NS::INVERSE_NAME);
+					$refPluralInverseName = $inverseRef->getFirstPropertyValue(
+						EarthIT_CMIPREST_NS::INVERSE_COLLECTION_NAME,
+						EarthIT_Schema_WordUtil::pluralize($refInverseName)
+					);
+					$matchRefInverseName = self::maybeMinimize($refInverseName, $fuzzyMatch);
+					$matchRefPluralInverseName = self::maybeMinimize($refPluralInverseName, $fuzzyMatch);
+					// plural takes priority if plural name = singular name
+					if( $matchRefPluralInverseName == $refRef ) {
+						$refName = $refPluralInverseName;
+						$refIsPlural = true;
+						return new EarthIT_Schema_Reference( $trcName, $ref->getTargetFieldNames(), $ref->getOriginFieldNames() );
+					}
+					if( $matchRefInverseName == $refRef ) {
+						$refName = $refInverseName;
+						$refIsPlural = false;
+						return new EarthIT_Schema_Reference( $trcName, $ref->getTargetFieldNames(), $ref->getOriginFieldNames() );
+					}
+				}
+			}
+			
+			// Look for one based on class name = ref ref
+			foreach( $rcs as $trcName=>$trc ) {
+				$trcCollectionName = $trc->getFirstPropertyValue(self::COLLECTION_NAME, EarthIT_Schema_WordUtil::pluralize($trcName));
+				$matchTrcCollectionName = self::maybeMinimize($trcCollectionName, $fuzzyMatch);
+				$matchTrcName = self::maybeMinimize($trcName, $fuzzyMatch);
+				
+				$found = false;
+				// plural takes priority if plural name = singular name
+				if( $matchTrcCollectionName == $refRef ) {
+					$found = true;
+					$refIsPlural = true;
+					$refName = $trcCollectionName;
+				} else if( $matchTrcName == $refRef ) {
+					$found = true;
+					$refIsPlural = false;
+					$refName = $trcName;
+				}
+				if( $found ) {
+					// Found a resource class that could work
+					// if it has an appropriate reverse reference.
+					foreach( $trc->getReferences() as $ref ) {
+						if( $ref->getTargetClassName() == $rc->getName() ) {
+							return new EarthIT_Schema_Reference( $trcName, $ref->getTargetFieldNames(), $ref->getOriginFieldNames() );
+						}
+					}
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	public static function parsePattern( $fieldName, $pattern, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema $schema=null ) {
+		$fieldNameParts = explode('.', $fieldName, 2);
+		if( count($fieldNameParts) > 1 ) {
+			if( $schema === null ) throw new Exception("Can't parse sub-item filter '{$fieldName}' because no \$schema provided.");
+			
+			$refRef = $fieldNameParts[0];
+			$subFieldName = $fieldNameParts[1];
+			$ref = self::findReference($refRef, $rc, $schema, $refName, $refIsPlural, true);
+			if( $ref === null ) {
+				throw new Exception(
+					"Couldn't find reference '$refRef' from ".$rc->getName().
+					($schema === null) ? " (try providing a schema to ".__FUNCTION__." so I can look harder)" : ''
+				);
+			}
+			$targetRc = $schema->getResourceClass($ref->getTargetClassName());
+			$targetFilter = self::parsePattern($subFieldName, $pattern, $targetRc, $schema);
+			return new EarthIT_Storage_Filter_SubItemFilter(
+				$refName, $refIsPlural, $ref,
+				$rc, $targetRc, $targetFilter
+			);
+		}
+		
 		$field = $rc->getField($fieldName);
 		if( $field === null ) throw new Exception("Error while parsing filter string '$filterString': no such field as '{$p[0]}'");
 		
@@ -107,18 +221,18 @@ class EarthIT_Storage_ItemFilters
 	}
 	
 	// TODO: What's nameMap?  Maybe remove it?
-	public static function parse( $filterString, EarthIT_Schema_ResourceClass $rc, array $nameMap=array() ) {
+	public static function parse( $filterString, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema $schema=null ) {
 		if( $filterString instanceof EarthIT_Storage_ItemFilter ) return $filterString;
 		
 		$p = explode('=', $filterString, 2);
 		if( count($p) != 2 ) throw new Exception("Not enough '='-separated parts in filter string: '$filterString'");
-		return self::parsePattern($p[0], $p[1], $rc, $nameMap);
+		return self::parsePattern($p[0], $p[1], $rc, $schema);
 	}
 	
 	/**
 	 * TODO: Document how different stuffs get parsed.
 	 */
-	public static function parseMulti( $filters, EarthIT_Schema_ResourceClass $rc ) {
+	public static function parseMulti( $filters, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema $schema=null ) {
 		if( $filters === '' ) return self::emptyFilter();
 		if( $filters instanceof EarthIT_Storage_ItemFilter ) return $filters;
 		
@@ -132,9 +246,9 @@ class EarthIT_Storage_ItemFilters
 		foreach( $filters as $k=>&$f ) {
 			if( is_string($k) ) {
 				//$f = "{$k}={$f}"; // ['ID' => 'foo'] = ['ID=foo']
-				$f = self::parsePattern($k, $f, $rc);
+				$f = self::parsePattern($k, $f, $rc, $schema);
 			} else {
-				$f = self::parse($f, $rc);
+				$f = self::parse($f, $rc, $schema);
 			}
 		}; unset($f);
 		
