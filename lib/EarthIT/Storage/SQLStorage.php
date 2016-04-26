@@ -1,9 +1,11 @@
 <?php
 
-// TODO: Replace with generic SQL-backed storage, taking a separate object to generate queries
 /** @unstable */ 
 class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_Storage_ItemSearcher, EarthIT_Storage_ItemDeleter
 {
+	// Option keys; content is arbitrary
+	const DUMP_QUERIES = 'EarthIT_Storage_SQLStorage::DUMP_QUERIES'; // Debugging storage?  Turn 
+	
 	protected $schema;
 	protected $sqlRunner;
 	protected $dbObjectNamer;
@@ -23,10 +25,23 @@ class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_S
 		
 	////
 	
+	protected function dumpQuery($sql, $params) {
+		echo "-- ".get_class($this)." running a query...\n";
+		if( method_exists($this->sqlRunner,'quoteParams')) {
+			echo $this->sqlRunner->quoteParams($sql,$params);
+		} else {
+			echo EarthIT_DBC_SQLExpressionUtil::queryToSql(
+				EarthIT_DBC_SQLExpressionUtil::expression($sql, $params),
+				EarthIT_DBC_DebugSQLQuoter::getInstance()
+			);
+		}
+	}
+
 	/** @override */
 	public function searchItems( EarthIT_Storage_Search $search, array $options=array() ) {
 		$q = $this->sqlGenerator->makeSearchQuery($search, $options);
 		list($sql, $params) = EarthIT_DBC_SQLExpressionUtil::templateAndParamValues($q);
+		if( !empty($options[self::DUMP_QUERIES]) ) $this->dumpQuery($sql,$params);
 		$rows = $this->sqlRunner->fetchRows($sql,$params);
 		return $this->sqlGenerator->dbExternalToSchemaItems($rows, $search->getResourceClass());
 	}
