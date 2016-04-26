@@ -123,8 +123,8 @@ class EarthIT_Storage_ItemFilters
 			// Look for one based on explicit inverse name
 			foreach( $rcs as $trcName=>$trc ) {
 				foreach( $rc->getReferences() as $ref ) {
-					$refInverseName = $inverseRef->getFirstPropertyValue(EarthIT_CMIPREST_NS::INVERSE_NAME);
-					$refPluralInverseName = $inverseRef->getFirstPropertyValue(
+					$refInverseName = $ref->getFirstPropertyValue(EarthIT_CMIPREST_NS::INVERSE_NAME);
+					$refPluralInverseName = $ref->getFirstPropertyValue(
 						EarthIT_CMIPREST_NS::INVERSE_COLLECTION_NAME,
 						EarthIT_Schema_WordUtil::pluralize($refInverseName)
 					);
