@@ -176,14 +176,26 @@ class EarthIT_Storage_ItemFilters
 		return null;
 	}
 	
-	public static function parsePattern( $fieldName, $pattern, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema $schema=null ) {
+	protected static function findField( $fieldRef, EarthIT_Schema_ResourceClass $rc, $fuzzyMatch=false ) {
+		if( $fuzzyMatch ) {
+			$fieldRef = EarthIT_Schema_WordUtil::minimize($fieldRef);
+			foreach( $rc->getFields() as $fn=>$f ) {
+				if( $fieldRef === EarthIT_Schema_WordUtil::minimize($fn) ) return $f;
+			}
+			return null;
+		} else {
+			return $rc->getField($fieldRef);
+		}
+	}
+	
+	public static function parsePattern( $fieldName, $pattern, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema $schema=null, $fuzzyMatch=false ) {
 		$fieldNameParts = explode('.', $fieldName, 2);
 		if( count($fieldNameParts) > 1 ) {
 			if( $schema === null ) throw new Exception("Can't parse sub-item filter '{$fieldName}' because no \$schema provided.");
 			
 			$refRef = $fieldNameParts[0];
 			$subFieldName = $fieldNameParts[1];
-			$ref = self::findReference($refRef, $rc, $schema, $refName, $refIsPlural, true);
+			$ref = self::findReference($refRef, $rc, $schema, $refName, $refIsPlural, $fuzzyMatch);
 			if( $ref === null ) {
 				throw new Exception(
 					"Couldn't find reference '$refRef' from ".$rc->getName().
@@ -198,7 +210,7 @@ class EarthIT_Storage_ItemFilters
 			);
 		}
 		
-		$field = $rc->getField($fieldName);
+		$field = self::findField($fieldName, $rc, $fuzzyMatch);
 		if( $field === null ) throw new Exception("Error while parsing filter string '$filterString': no such field as '{$p[0]}'");
 		
 		if( is_scalar($pattern) ) {
@@ -221,18 +233,18 @@ class EarthIT_Storage_ItemFilters
 	}
 	
 	// TODO: What's nameMap?  Maybe remove it?
-	public static function parse( $filterString, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema $schema=null ) {
+	public static function parse( $filterString, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema $schema=null, $fuzzyMatch=false ) {
 		if( $filterString instanceof EarthIT_Storage_ItemFilter ) return $filterString;
 		
 		$p = explode('=', $filterString, 2);
 		if( count($p) != 2 ) throw new Exception("Not enough '='-separated parts in filter string: '$filterString'");
-		return self::parsePattern($p[0], $p[1], $rc, $schema);
+		return self::parsePattern($p[0], $p[1], $rc, $schema, $fuzzyMatch);
 	}
 	
 	/**
 	 * TODO: Document how different stuffs get parsed.
 	 */
-	public static function parseMulti( $filters, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema $schema=null ) {
+	public static function parseMulti( $filters, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema $schema=null, $fuzzyMatch=false ) {
 		if( $filters === '' ) return self::emptyFilter();
 		if( $filters instanceof EarthIT_Storage_ItemFilter ) return $filters;
 		
@@ -246,9 +258,9 @@ class EarthIT_Storage_ItemFilters
 		foreach( $filters as $k=>&$f ) {
 			if( is_string($k) ) {
 				//$f = "{$k}={$f}"; // ['ID' => 'foo'] = ['ID=foo']
-				$f = self::parsePattern($k, $f, $rc, $schema);
+				$f = self::parsePattern($k, $f, $rc, $schema, $fuzzyMatch);
 			} else {
-				$f = self::parse($f, $rc, $schema);
+				$f = self::parse($f, $rc, $schema, $fuzzyMatch);
 			}
 		}; unset($f);
 		
