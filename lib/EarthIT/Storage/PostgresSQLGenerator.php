@@ -65,6 +65,10 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 	//// schema <-> DB external value mapping
 	
 	public function schemaToDbExternalValue( $v, EarthIT_Schema_Field $f, EarthIT_Schema_ResourceClass $rc ) {
+		if( $v instanceof EarthIT_DBC_SQLQueryComponent or $v instanceof EarthIT_Storage_InternalValue ) {
+			throw new Exception("Shouldn't be trying to convert ".get_class($v)." to DB external value; that conversion should be bypassed.");
+		}
+		
 		if( $v === null ) {
 			return null;
 		} else if( self::valuesOfTypeShouldBeSelectedAsGeoJson($f->getType()) or self::valuesOfTypeShouldBeSelectedAsJson($f->getType()) ) {
@@ -132,8 +136,8 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		$parts = array();
 		foreach( $columnValues as $columnName=>$val ) {
 			$field = $fieldsByColumnName[$columnName];
-			$parts[] = "{{$columnParamNames[$columnName]}} = ".
-				$this->dbExternalToInternalValueSql($field, $rc, "{{$columnValueParamNames[$columnName]}}");
+			$internalValueSql = $this->dbExternalToInternalValueSql($field, $rc, "{{$columnValueParamNames[$columnName]}}")
+			$parts[] = "{{$columnParamNames[$columnName]}} = $internalValueSql";
 		}
 		return $parts;
 	}
@@ -358,8 +362,24 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 			$valueSqls = array();
 			foreach( $fieldsToStore as $fn=>$f ) {
 				$paramName = "v_".($paramCounter++);
-				$valueSqls[] = $this->dbExternalToInternalValueSql($f, $rc, "{{$paramName}}");
-				$params[$paramName] = $this->schemaToDbExternalValue(isset($item[$fn]) ? $item[$fn] : null, $f, $rc);
+				
+				$value = isset($item[$fn]) ? $item[$fn] : null;
+				if( $value instanceof EarthIT_DBC_SQLQueryComponent ) {
+					$isAlreadyInternal = true;
+				} else if( $value instanceof EarthIT_Storage_InternalValue ) {
+					$isAlreadyInternal = true;
+					$value = $value->getValue();
+				} else {
+					$isAlreadyInternal = false;
+				}
+				
+				if( $isAlreadyInternal ) {
+					$valueSqls[] = "{{$paramName}}";
+					$params[$paramName] = $value;
+				} else {
+					$valueSqls[] = $this->dbExternalToInternalValueSql($f, $rc, "{{$paramName}}");
+					$params[$paramName] = $this->schemaToDbExternalValue($value, $f, $rc);
+				}
 			}
 			$valueRows[] = "(".implode(', ', $valueSqls).")";
 		}
