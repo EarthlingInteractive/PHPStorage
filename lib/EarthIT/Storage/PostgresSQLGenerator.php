@@ -136,7 +136,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		$parts = array();
 		foreach( $columnValues as $columnName=>$val ) {
 			$field = $fieldsByColumnName[$columnName];
-			$internalValueSql = $this->dbExternalToInternalValueSql($field, $rc, "{{$columnValueParamNames[$columnName]}}")
+			$internalValueSql = $this->dbExternalToInternalValueSql($field, $rc, "{{$columnValueParamNames[$columnName]}}");
 			$parts[] = "{{$columnParamNames[$columnName]}} = $internalValueSql";
 		}
 		return $parts;
