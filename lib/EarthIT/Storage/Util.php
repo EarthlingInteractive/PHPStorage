@@ -197,7 +197,10 @@ class EarthIT_Storage_Util
 		EarthIT_Schema_ResourceClass $rc, $filters=array(), $orderBy=array(),
 		$skip=0, $limit=null, array $options=array()
 	) {
-		$filter = EarthIT_Storage_ItemFilters::parseMulti($filters, $rc);
+		$schema = isset($options[EarthIT_Storage::SCHEMA]) ? $options[EarthIT_Storage::SCHEMA] : null;
+		$fuzzyMatch = isset($options[EarthIT_Storage::FUZZY_MATCH]) ? $options[EarthIT_Storage::FUZZY_MATCH] : false;
+		
+		$filter = EarthIT_Storage_ItemFilters::parseMulti($filters, $rc, $schema, $fuzzyMatch);
 		$comparator = EarthIT_Storage_FieldwiseComparator::parse($orderBy);
 		
 		return new EarthIT_Storage_Search($rc, $filter, $comparator, $skip, $limit, $options);

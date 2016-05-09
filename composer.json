@@ -16,7 +16,7 @@
 	},
 	"autoload": {
 		"psr-0": {
-			"EarthIT_Storage_": "lib/"
+			"EarthIT_Storage": "lib/"
 		}
 	},
 	"autoload-dev": {
