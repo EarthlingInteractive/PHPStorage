@@ -416,7 +416,6 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 	public function makeSearchQuery( EarthIT_Storage_Search $search, array $options=array() ) {
 		$rc = $search->getResourceClass();
 		
-		$paramCounter = 0;
 		$params = array();
 		$PB = new EarthIT_DBC_ParamsBuilder($params);
 		$params['table']  = $this->rcTableExpression($rc);
