@@ -212,7 +212,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 			// $params[$columnValueParamName] needs to be set different per item/query
 			
 			$columnValueSelectSql = $this->dbInternalToExternalValueSql($f, $rc, "{{$columnParamName}}");
-			if( $columnValueSelectSql !== "{{$columnParamName}}" ) $columnValueSelectSql .= "{{$columnParamName}}";
+			if( $columnValueSelectSql !== "{{$columnParamName}}" ) $columnValueSelectSql .= "AS {{$columnParamName}}";
 			$outputColumnValueSqls[$columnName] = $columnValueSelectSql;
 			
 			$inputColumnValueSqls[$columnName] = $this->dbExternalToInternalValueSql($f, $rc, "{{$columnValueParamName}}");
