@@ -468,6 +468,11 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		
 		// TODO: Mind the options.
 		
+		// This code was copied from _bulkPatchyQueries
+		// and committed as soon as the unit test passed.
+		// It's probably a bit of a mess.
+		// Refactor it if you want to.
+		
 		$params = array();
 		$PB = new EarthIT_DBC_ParamsBuilder($params);
 		$params['table']  = $this->rcTableExpression($rc);
@@ -510,7 +515,7 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 			"WHERE {$conditions}\n".
 			"RETURNING\n\t".implode(",\n\t",$outputColumnValueSqls);
 		
-		$returnSaved = true; // TODO: Options
+		$returnSaved = true; // TODO: Only if requested by options
 		
 		return array( new EarthIT_Storage_StorageQuery($sql, $params, $returnSaved) );
 	}

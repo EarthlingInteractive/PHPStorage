@@ -2,7 +2,7 @@
 
 interface EarthIT_Storage_ItemUpdater
 {
-	const RETURN_UPDATED = 'returnUpdated';
+	const RETURN_UPDATED = 'returnSaved'; // Intentionally the same as ItemSaver::RETURN_SAVED
 	
 	/**
 	 * Update items matching a filter by replacing certain field values.
