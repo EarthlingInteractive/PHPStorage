@@ -543,4 +543,32 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 			$this->assertEquals('EPSG:4326', $loc['crs']['properties']['name']);
 		}
 	}
+	
+	public function testUpdatePks() {
+		$orgRc = $this->registry->schema->getResourceClass('organization');
+		$id0 = $this->registry->storageHelper->newEntityId();
+		$id1 = $this->registry->storageHelper->newEntityId();
+		$newOrgs = self::keyById($this->storage->saveItems(array(
+			array(
+				'ID' => $id0,
+				'name' => 'Test Org '.$id0
+			)
+		), $orgRc, array(
+			EarthIT_Storage_ItemSaver::RETURN_SAVED => true,
+		)));
+		
+		$updated = self::keyById($this->storage->updateItems(
+			array('ID'=>$id1), $orgRc, 
+			EarthIT_Storage_ItemFilters::byId($id0, $orgRc),
+			array(EarthIT_Storage_ItemUpdater::RETURN_UPDATED => true)
+		), $orgRc);
+		
+		$this->assertEquals( array(
+			$id1 => array(
+				'ID' => $id1,
+				'name' => 'Test Org '.$id0,
+				'office location' => null,
+			)
+		), $updated );
+	}
 }

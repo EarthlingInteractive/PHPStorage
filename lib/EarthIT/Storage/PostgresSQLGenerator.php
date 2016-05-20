@@ -456,6 +456,65 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		);
 	}
 	
+	public function makeUpdateQueries(
+		array $updates, EarthIT_Storage_ItemFilter $filter,
+		EarthIT_Schema_ResourceClass $rc, array $options=array()
+	) {
+		if( count($updates) == 0 ) {
+			throw new Exception("Not updating anything!");
+			// Maybe we could allow that?  In which case this just becomes a search.
+			// Would have to construct the query differently in that case.
+		}
+		
+		// TODO: Mind the options.
+		
+		$params = array();
+		$PB = new EarthIT_DBC_ParamsBuilder($params);
+		$params['table']  = $this->rcTableExpression($rc);
+		$conditions = $filter->toSql('stuff', $this->dbObjectNamer, $PB);
+		
+		$storableFields = EarthIT_Storage_Util::storableFields($rc);
+		$outputColumnValueSqls = array();
+		$inputColumnValueSqls = array();
+		$columnParamNames = array();
+		$fieldsByColumnName = array();
+		$columnUpdates = array();
+		foreach( $storableFields as $fn=>$f ) {
+			$columnName = $this->dbObjectNamer->getColumnName($rc, $f);
+			$fieldColumnNames[$fn] = $columnName;
+			$fieldsByColumnName[$columnName] = $f;
+			
+			$columnParamName = $PB->newParam('c_');
+			$columnParamNames[$columnName] = $columnParamName;
+			$params[$columnParamName] = new EarthIT_DBC_SQLIdentifier($columnName);
+			
+			$columnValueParamName = $PB->newParam("v_");
+			$columnValueParamNames[$columnName] = $columnValueParamName;
+			if( array_key_exists($fn, $updates) ) {
+				$params[$columnValueParamName] = $updates[$fn];
+				$columnUpdates[$columnName] = null; // Value never actually gets used kekeke
+			}
+			
+			$columnValueSelectSql = $this->dbInternalToExternalValueSql($f, $rc, "{{$columnParamName}}");
+			if( $columnValueSelectSql !== "{{$columnParamName}}" ) $columnValueSelectSql .= "AS {{$columnParamName}}";
+			$outputColumnValueSqls[$columnName] = $columnValueSelectSql;
+			
+			$inputColumnValueSqls[$columnName] = $this->dbExternalToInternalValueSql($f, $rc, "{{$columnValueParamName}}");
+		}
+		
+		$sets = $this->encodeColumnValuePairs($columnUpdates, $columnParamNames, $columnValueParamNames, $rc, $fieldsByColumnName);		
+
+		$sql =
+			"UPDATE {table} AS stuff\n".
+			"SET\n\t".implode(",\n\t",$sets)."\n".
+			"WHERE {$conditions}\n".
+			"RETURNING\n\t".implode(",\n\t",$outputColumnValueSqls);
+		
+		$returnSaved = true; // TODO: Options
+		
+		return array( new EarthIT_Storage_StorageQuery($sql, $params, $returnSaved) );
+	}
+	
 	public function makeDbExternalFieldValueSqls(
 		array $fields, EarthIT_Schema_ResourceClass $rc, $tableSql,
 		EarthIT_DBC_ParamsBuilder $params

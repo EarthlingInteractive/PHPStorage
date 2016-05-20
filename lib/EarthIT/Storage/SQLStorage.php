@@ -58,6 +58,26 @@ class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_S
 	}
 	
 	/** @override */
+	public function updateItems(
+		array $updatedFieldValues, EarthIT_Schema_ResourceClass $rc,
+		EarthIT_Storage_ItemFilter $filter, array $options
+	) {
+		$queries = $this->sqlGenerator->makeUpdateQueries( $updatedFieldValues, $filter, $rc, $options );
+		$resultRows = array();
+
+		foreach( $queries as $q ) {
+			list($sql,$params) = EarthIT_DBC_SQLExpressionUtil::templateAndParamValues($q);
+			if( $q->returnsStuff() ) {
+				$resultRows = array_merge($resultRows, $this->sqlRunner->fetchRows($sql, $params));
+			} else {
+				$this->sqlRunner->doQuery($sql, $params);
+			}
+		}
+		
+		return $this->sqlGenerator->dbExternalToSchemaItems($resultRows, $rc);
+	}
+	
+	/** @override */
 	public function saveItems(array $itemData, EarthIT_Schema_ResourceClass $rc, array $options=array()) {
 		EarthIT_Storage_Util::defaultSaveItemsOptions($options);
 		

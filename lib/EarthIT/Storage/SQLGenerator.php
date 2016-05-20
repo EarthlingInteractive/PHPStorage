@@ -47,6 +47,10 @@ interface EarthIT_Storage_SQLGenerator
 	 */ 
 	public function makeSearchQuery( EarthIT_Storage_Search $search, array $options=array() );
 	
+	public function makeUpdateQueries(
+		array $updates, EarthIT_Storage_ItemFilter $filter,
+		EarthIT_Schema_ResourceClass $rc, array $options=array() );
+	
 	/**
 	 * Make select parts (suitable for passing to Util::formatSelectComponents)
 	 * to get all the specified fields.

@@ -51,6 +51,8 @@ implements
 				}
 				$id = EarthIT_Storage_Util::itemId($item, $rc);
 				if( $id === null ) {
+					// Note: In some cases we may want to allow ID-less records,
+					// in which case remove the throw and just append the item to wherever lists.
 					throw new Exception("Failed to generate an ID for a ".$rc->getName());
 				}
 			}
@@ -98,5 +100,31 @@ implements
 			if( $filter->matches($item) ) $matchedKeys[] = $k;
 		}
 		foreach( $matchedKeys as $k ) unset($this->items[$rcName][$k]);
+	}
+	
+	public function updateItems(
+		array $updatedFieldValues, EarthIT_Schema_ResourceClass $rc,
+		EarthIT_Storage_ItemFilter $filter, array $options
+	) {
+		$rcName = $rc->getName();
+		$matchedKeys = array();
+		if( isset($this->items[$rcName]) ) foreach( $this->items[$rcName] as $k=>$item ) {
+			if( $filter->matches($item) ) $matchedKeys[] = $k;
+		}
+		$updated = array();
+		foreach( $matchedKeys as $k ) {
+			$item = $this->items[$rcName][$k];
+			$item = $updatedFieldValues + $item;
+			$id = EarthIT_Storage_Util::itemId($item, $rc);
+			if( $id !== null and $id !== $k ) {
+				// TODO: Look at options to determine if updating is allowed
+				// to overwrite other items
+				unset($this->items[$rcName][$k]);
+				$this->items[$rcName][$id] = $item;
+				$k = $id;
+			}
+			$updated[$k] = $item;
+		}
+		return $updated;
 	}
 }
