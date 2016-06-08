@@ -64,6 +64,9 @@ class EarthIT_Storage_ItemFilters
 			foreach( $patternValues as $p ) {
 				$values[] = EarthIT_Storage_Util::cast($p, $field->getType()->getPhpTypeName());
 			}
+			if( count($values) == 0 ) {
+				return new EarthIT_Storage_Filter_OredItemFilter(array());
+			}
 			$comparisonOp = EarthIT_Storage_Filter_InListComparisonOp::getInstance();
 			$vExp = new EarthIT_Storage_Filter_ListValueExpression($values);
 			break;
