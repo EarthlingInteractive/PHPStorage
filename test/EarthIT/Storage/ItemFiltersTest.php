@@ -35,6 +35,14 @@ class EarthIT_Storage_ItemFiltersTest extends EarthIT_Storage_TestCase
 		$this->assertTrue( $caught, "non-fuzzy parsing with 'userName' field should have failed" );
 	}
 	
+	public function testZeroLengthInFilter() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		
+		$filter = EarthIT_Storage_ItemFilters::parseMulti( array('username'=>'in:'), $userRc );
+		$this->assertTrue( $filter instanceof EarthIT_Storage_Filter_OredItemFilter, "'in:' should have parsed to EarthIT_Storage_Filter_OredItemFilter; got a ".get_class($filter) );
+		$this->assertEquals( array(), $filter->getComponentFilters(), "'in:' should have parsed to EarthIT_Storage_Filter_OredItemFilter with no components." );
+	}
+	
 	public function _testParseSubItemFilter( $fuzz ) {
 		$orgRc = $this->registry->schema->getResourceClass('organization');
 		$filter0 = EarthIT_Storage_ItemFilters::parseMulti(
