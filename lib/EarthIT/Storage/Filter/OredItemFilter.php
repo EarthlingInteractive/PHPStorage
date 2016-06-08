@@ -13,7 +13,7 @@ class EarthIT_Storage_Filter_OredItemFilter implements EarthIT_Storage_ItemFilte
 	}
 	
 	public function toSql( $tableSql, EarthIT_DBC_Namer $dbObjectNamer, EarthIT_DBC_ParamsBuilder $params ) {
-		if( count($this->componentFilters) == 0 ) return '{'.$params->newParam('truth',true).'}';
+		if( count($this->componentFilters) == 0 ) return '{'.$params->newParam('falth',false).'}';
 		
 		$sqlz = array();
 		foreach( $this->componentFilters as $f ) {
