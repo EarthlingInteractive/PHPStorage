@@ -60,6 +60,7 @@ class EarthIT_Storage_ItemFilters
 			return new EarthIT_Storage_Filter_ExactMatchFieldValueFilter($field, $rc, $value);
 		case 'in':
 			$values = array();
+			if( $pattern === '' ) $pattern = array();
 			$patternValues = is_array($pattern) ? $pattern : explode(',',$pattern);
 			foreach( $patternValues as $p ) {
 				$values[] = EarthIT_Storage_Util::cast($p, $field->getType()->getPhpTypeName());
