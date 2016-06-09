@@ -1,7 +1,12 @@
 <?php
 
 /** @unstable */ 
-class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_Storage_ItemSearcher, EarthIT_Storage_ItemDeleter
+class EarthIT_Storage_SQLStorage
+implements
+	EarthIT_Storage_ItemSaver,
+	EarthIT_Storage_ItemSearcher,
+	EarthIT_Storage_ItemDeleter,
+	EarthIT_Storage_ItemUpdater
 {
 	// Option keys; content is arbitrary
 	const DUMP_QUERIES = 'EarthIT_Storage_SQLStorage::DUMP_QUERIES'; // Debugging storage?  Turn 
@@ -60,7 +65,7 @@ class EarthIT_Storage_SQLStorage implements EarthIT_Storage_ItemSaver, EarthIT_S
 	/** @override */
 	public function updateItems(
 		array $updatedFieldValues, EarthIT_Schema_ResourceClass $rc,
-		EarthIT_Storage_ItemFilter $filter, array $options
+		EarthIT_Storage_ItemFilter $filter, array $options=array()
 	) {
 		$queries = $this->sqlGenerator->makeUpdateQueries( $updatedFieldValues, $filter, $rc, $options );
 		$resultRows = array();

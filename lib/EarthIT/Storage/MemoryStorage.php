@@ -4,7 +4,8 @@ class EarthIT_Storage_MemoryStorage
 implements
 	EarthIT_Storage_ItemSaver,
 	EarthIT_Storage_ItemSearcher,
-	EarthIT_Storage_ItemDeleter
+	EarthIT_Storage_ItemDeleter,
+	EarthIT_Storage_ItemUpdater
 {
 	/** Array of resource class name => list of items of that class */
 	protected $items = array();
@@ -104,7 +105,7 @@ implements
 	
 	public function updateItems(
 		array $updatedFieldValues, EarthIT_Schema_ResourceClass $rc,
-		EarthIT_Storage_ItemFilter $filter, array $options
+		EarthIT_Storage_ItemFilter $filter, array $options=array()
 	) {
 		$rcName = $rc->getName();
 		$matchedKeys = array();
