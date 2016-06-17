@@ -1,11 +1,12 @@
 /composer.lock
 /test/ccouch-repos.lst
 /test/dbc-postgres.json
-/test/db-scripts/create-tables.sql
-/test/db-scripts/create-postgres-database.sql
-/test/db-scripts/drop-postgres-database.sql
+/test/postgres-scripts/create-tables.sql
+/test/postgres-scripts/create-postgres-database.sql
+/test/postgres-scripts/drop-postgres-database.sql
 /test/schema.php
 /util/SchemaSchemaDemo.jar
 /util/phpstoragetest-psql
+/util/phpstoragetest-mysql
 /util/phpstoragetest-pg_dump
 /vendor

@@ -34,10 +34,6 @@ class EarthIT_Storage_TestRegistry
 		return $c;
 	}
 	
-	public function loadPostgresDbAdapter() {
-		return Doctrine_DBAL_DriverManager::getConnection( $this->getConfig('dbc-postgres') );
-	}
-	
 	public function loadDbObjectNamer() {
 		return new EarthIT_DBC_OverridableNamer(new EarthIT_DBC_PostgresNamer());
 	}
@@ -45,7 +41,33 @@ class EarthIT_Storage_TestRegistry
 	public function loadSchema($name='') {
 		return require EarthIT_Storage_ROOT_DIR.'/test/schema.php';
 	}
+	
+	// Mysql
 
+	public function loadMysqlDbAdapter() {
+		return Doctrine_DBAL_DriverManager::getConnection( $this->getConfig('dbc-mysql') );
+	}
+	
+	public function loadMySqlRunner() {
+		return new EarthIT_DBC_DoctrineSQLRunner($this->mysqlDbAdapter);
+	}
+
+	protected function loadMysqlStorage() {
+		return new EarthIT_Storage_SQLStorage(
+			$this->schema, $this->mySqlRunner, $this->dbObjectNamer,
+			new EarthIT_Storage_MySQLGenerator($this->dbObjectNamer));
+	}
+	
+	protected function loadMysqlStorageHelper() {
+		return new EarthIT_Storage_StorageHelper( $this->mysqlRunner, $this->mysqlStorage );
+	}
+	
+	// Postgres
+
+	public function loadPostgresDbAdapter() {
+		return Doctrine_DBAL_DriverManager::getConnection( $this->getConfig('dbc-postgres') );
+	}
+	
 	public function loadPostgresSqlRunner() {
 		return new EarthIT_DBC_DoctrineSQLRunner($this->postgresDbAdapter);
 	}
