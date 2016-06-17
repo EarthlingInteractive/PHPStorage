@@ -2,42 +2,47 @@
 
 class EarthIT_Storage_PostgresStorageTest extends EarthIT_Storage_StorageTest
 {
+	public function setUp() {
+		parent::setUp();
+		$this->storageHelper = $this->registry->postgresStorageHelper;
+	}
+	
 	protected function makeStorage() {
 		return $this->registry->postgresStorage;
 	}
 	
 	protected function preallocateEntityIds($count) {
-		$this->registry->storageHelper->preallocateEntityIds($count);
+		$this->storageHelper->preallocateEntityIds($count);
 	}
 	
 	protected function newEntityId() {
-		return $this->registry->storageHelper->newEntityId();
+		return $this->storageHelper->newEntityId();
 	}
 	
 	public function testInsertSimple() {
-		$this->registry->storageHelper->preallocateEntityIds(2);
-		$entityId0 = $this->registry->storageHelper->newEntityId();
-		$entityId1 = $this->registry->storageHelper->newEntityId();
+		$this->preallocateEntityIds(2);
+		$entityId0 = $this->newEntityId();
+		$entityId1 = $this->newEntityId();
 		$userRc = $this->registry->schema->getResourceClass('user');
 		
-		$oldUserCount = $this->registry->storageHelper->queryValue("SELECT COUNT(*) FROM storagetest.user");
+		$oldUserCount = $this->storageHelper->queryValue("SELECT COUNT(*) FROM storagetest.user");
 		
 		$this->storage->saveItems( array(
 			array('ID' => $entityId0, 'username' => 'Bob Hope', 'passhash' => 'asd123'),
 			array('ID' => $entityId1, 'username' => 'Bob Jones', 'passhash' => 'asd125'),
 		), $userRc);
 		
-		$newUserCount = $this->registry->storageHelper->queryValue("SELECT COUNT(*) FROM storagetest.user");
+		$newUserCount = $this->storageHelper->queryValue("SELECT COUNT(*) FROM storagetest.user");
 		
 		$this->assertEquals( $oldUserCount + 2, $newUserCount );
 	}
 	
 	public function testSubItemFiltering() {
-		$this->registry->storageHelper->preallocateEntityIds(4);
-		$user0Id = $this->registry->storageHelper->newEntityId();
-		$user1Id = $this->registry->storageHelper->newEntityId();
-		$org0Id = $this->registry->storageHelper->newEntityId();
-		$org1Id = $this->registry->storageHelper->newEntityId();
+		$this->preallocateEntityIds(4);
+		$user0Id = $this->newEntityId();
+		$user1Id = $this->newEntityId();
+		$org0Id = $this->newEntityId();
+		$org1Id = $this->newEntityId();
 
 		$userRc = $this->registry->schema->getResourceClass('user');
 		$orgRc = $this->registry->schema->getResourceClass('organization');

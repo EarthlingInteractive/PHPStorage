@@ -1,9 +1,11 @@
 <?php
 
-class EarthIT_Storage_DBConnectionTest extends EarthIT_Storage_TestCase
+abstract class EarthIT_Storage_DBConnectionTest extends EarthIT_Storage_TestCase
 {
+	protected abstract function getStorageHelper();
+	
 	public function testSelectHelloWorld() {
-		$rows = $this->registry->storageHelper->queryRow("SELECT 'Hello, world!' AS text");
+		$rows = $this->getStorageHelper()->queryRow("SELECT 'Hello, world!' AS text");
 		$this->assertEquals( array('text'=>'Hello, world!'), $rows);
 	}
 	
@@ -18,7 +20,7 @@ class EarthIT_Storage_DBConnectionTest extends EarthIT_Storage_TestCase
 			"INSERT INTO storagetest.user (username) VALUES\n".
 			"('bob'), ('fred')\n".
 			"RETURNING id, username\n";
-		$rows = $this->registry->sqlRunner->fetchRows($sql);
+		$rows = $this->getStorageHelper()->queryRows($sql);
 		$this->assertEquals(2, count($rows));
 		foreach( $rows as $row ) {
 			$this->assertEquals( 2, count($row) );

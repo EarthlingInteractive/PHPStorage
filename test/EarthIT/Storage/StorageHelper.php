@@ -2,16 +2,23 @@
 
 class EarthIT_Storage_StorageHelper extends EarthIT_Storage_Component
 {
+	protected $sqlRunner;
+	protected $storage;
+	public function __construct( $sqlRunner, $storage ) {
+		$this->sqlRunner = $sqlRunner;
+		$this->storage = $storage;
+	}
+	
 	//// Basic query stuff
 
 	public function doQuery($sql, $params=array()) {
 		list($sql,$params) = EarthIT_DBC_SQLExpressionUtil::templateAndParamValues($sql, $params);
-		$this->registry->sqlRunner->doQuery($sql, $params);
+		$this->sqlRunner->doQuery($sql, $params);
 	}
 	
 	protected function _queryRows($sql, array $params=array()) {
 		list($sql,$params) = EarthIT_DBC_SQLExpressionUtil::templateAndParamValues($sql, $params);
-		return $this->registry->sqlRunner->fetchRows($sql, $params);
+		return $this->sqlRunner->fetchRows($sql, $params);
 	}
 	
 	public function queryRow($sql, array $params=array()) {

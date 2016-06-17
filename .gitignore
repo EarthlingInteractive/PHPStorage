@@ -1,9 +1,9 @@
 /composer.lock
 /test/ccouch-repos.lst
-/test/dbc.json
+/test/dbc-postgres.json
 /test/db-scripts/create-tables.sql
-/test/db-scripts/create-database.sql
-/test/db-scripts/drop-database.sql
+/test/db-scripts/create-postgres-database.sql
+/test/db-scripts/drop-postgres-database.sql
 /test/schema.php
 /util/SchemaSchemaDemo.jar
 /util/phpstoragetest-psql

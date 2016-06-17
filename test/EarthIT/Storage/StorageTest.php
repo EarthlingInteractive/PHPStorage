@@ -546,8 +546,8 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 	
 	public function testUpdatePks() {
 		$orgRc = $this->registry->schema->getResourceClass('organization');
-		$id0 = $this->registry->storageHelper->newEntityId();
-		$id1 = $this->registry->storageHelper->newEntityId();
+		$id0 = $this->newEntityId();
+		$id1 = $this->newEntityId();
 		$newOrgs = self::keyById($this->storage->saveItems(array(
 			array(
 				'ID' => $id0,

@@ -34,8 +34,8 @@ class EarthIT_Storage_TestRegistry
 		return $c;
 	}
 	
-	public function loadDbAdapter() {
-		return Doctrine_DBAL_DriverManager::getConnection( $this->getConfig('dbc') );
+	public function loadPostgresDbAdapter() {
+		return Doctrine_DBAL_DriverManager::getConnection( $this->getConfig('dbc-postgres') );
 	}
 	
 	public function loadDbObjectNamer() {
@@ -46,14 +46,18 @@ class EarthIT_Storage_TestRegistry
 		return require EarthIT_Storage_ROOT_DIR.'/test/schema.php';
 	}
 
-	public function loadSqlRunner() {
-		return new EarthIT_DBC_DoctrineSQLRunner($this->dbAdapter);
+	public function loadPostgresSqlRunner() {
+		return new EarthIT_DBC_DoctrineSQLRunner($this->postgresDbAdapter);
 	}
 	
 	protected function loadPostgresStorage() {
 		return new EarthIT_Storage_SQLStorage(
-			$this->schema, $this->sqlRunner, $this->dbObjectNamer,
+			$this->schema, $this->postgresSqlRunner, $this->dbObjectNamer,
 			new EarthIT_Storage_PostgresSQLGenerator($this->dbObjectNamer));
+	}
+	
+	protected function loadPostgresStorageHelper() {
+		return new EarthIT_Storage_StorageHelper( $this->postgresSqlRunner, $this->postgresStorage );
 	}
 	
 	protected function loadRester() {

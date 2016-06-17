@@ -1,11 +1,11 @@
 config_files := \
 	test/ccouch-repos.lst \
-	test/dbc.json
+	test/dbc-postgres.json
 
 generated_resources := \
 	test/db-scripts/create-tables.sql \
-	test/db-scripts/create-database.sql \
-	test/db-scripts/drop-database.sql \
+	test/db-scripts/create-postgres-database.sql \
+	test/db-scripts/drop-postgres-database.sql \
 	util/phpstoragetest-psql \
 	util/phpstoragetest-pg_dump \
 	util/SchemaSchemaDemo.jar \
@@ -29,9 +29,9 @@ default: resources run-tests
 .DELETE_ON_ERROR:
 
 .PHONY: \
-	create-database \
+	create-postgres-database \
 	default \
-	drop-database \
+	drop-postgres-database \
 	everything \
 	empty-database \
 	rebuild-database \
@@ -58,10 +58,10 @@ vendor: composer.json
 ${config_files}: %: | %.example
 	cp "$|" "$@"
 
-util/phpstoragetest-psql: test/dbc.json
+util/phpstoragetest-psql: test/dbc-postgres.json
 	vendor/bin/generate-psql-script -psql-exe psql "$<" >"$@"
 	chmod +x "$@"
-util/phpstoragetest-pg_dump: test/dbc.json
+util/phpstoragetest-pg_dump: test/dbc-postgres.json
 	vendor/bin/generate-psql-script -psql-exe pg_dump "$<" >"$@"
 	chmod +x "$@"
 
@@ -75,17 +75,17 @@ test/db-scripts/create-tables.sql: test/schema.txt util/SchemaSchemaDemo.jar
 test/schema.php: test/schema.txt util/SchemaSchemaDemo.jar
 	${schemaschemademo} -o-schema-php "$@" -php-schema-class-namespace EarthIT_Schema
 
-test/db-scripts/create-database.sql: test/dbc.json vendor
+test/db-scripts/create-postgres-database.sql: test/dbc-postgres.json vendor
 	mkdir -p test/db-scripts
 	vendor/bin/generate-create-database-sql "$<" >"$@"
-test/db-scripts/drop-database.sql: test/dbc.json vendor
+test/db-scripts/drop-postgres-database.sql: test/dbc-postgres.json vendor
 	mkdir -p test/db-scripts
 	vendor/bin/generate-drop-database-sql "$<" >"$@"
 
-create-database: %: test/db-scripts/%.sql
+create-postgres-database: %: test/db-scripts/%.sql
 	cat '$<' | sudo -u postgres psql -v ON_ERROR_STOP=1
 	sudo -u postgres psql -v ON_ERROR_STOP=1 phpstoragetest <test/db-scripts/create-postgis-extension.sql
-drop-database: %: test/db-scripts/%.sql
+drop-postgres-database: %: test/db-scripts/%.sql
 	cat '$<' | sudo -u postgres psql -v ON_ERROR_STOP=1
 
 empty-database: test/db-scripts/empty-database.sql util/phpstoragetest-psql
