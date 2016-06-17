@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec mysql -u'phpstoragetest' -p'phpstoragetest' 'phpstoragetest' "$@"

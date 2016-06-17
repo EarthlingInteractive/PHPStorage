@@ -83,8 +83,7 @@ test/postgres-scripts/drop-database.sql: test/dbc-postgres.json vendor
 	mkdir -p test/postgres-scripts
 	vendor/bin/generate-drop-database-sql "$<" >"$@"
 
-create-mysql-database: %: test/mysql-scripts/%.sql
-	cat '$<' | mysql -uroot
+# Postgres!
 
 create-postgres-database: test/postgres-scripts/create-database.sql
 	cat '$<' | sudo -u postgres psql -v ON_ERROR_STOP=1
@@ -106,7 +105,16 @@ upgrade-postgres-database: \
 
 rebuild-postgres-database: empty-postgres-database upgrade-postgres-database
 
-run-unit-tests: runtime-resources upgrade-postgres-database
+# MySQL!
+
+create-mysql-database: test/mysql-scripts/create-database.sql
+	cat '$<' | mysql -uroot
+drop-mysql-database: test/mysql-scripts/drop-database.sql
+	cat '$<' | mysql -uroot
+upgrade-mysql-database: test/mysql-scripts/create-tables.sql
+	cat '$<' | util/phpstoragetest-mysql
+
+run-unit-tests: runtime-resources upgrade-postgres-database upgrade-mysql-database
 	vendor/bin/phpunit --bootstrap test/phpuinit-bootstrap.php test
 
 run-tests: run-unit-tests

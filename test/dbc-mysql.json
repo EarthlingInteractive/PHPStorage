@@ -2,7 +2,7 @@
     "dbname": "phpstoragetest",
     "host": "localhost",
     "user": "phpstoragetest",
-    "password": "phpstoragetestpassword",
+    "password": "phpstoragetest",
     "driver": "pdo_mysql",
     "charset": "utf8"
 }

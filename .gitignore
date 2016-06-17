@@ -7,6 +7,5 @@
 /test/schema.php
 /util/SchemaSchemaDemo.jar
 /util/phpstoragetest-psql
-/util/phpstoragetest-mysql
 /util/phpstoragetest-pg_dump
 /vendor
