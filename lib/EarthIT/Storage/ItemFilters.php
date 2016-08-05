@@ -203,7 +203,7 @@ class EarthIT_Storage_ItemFilters
 			if( $ref === null ) {
 				throw new Exception(
 					"Couldn't find reference '$refRef' from ".$rc->getName().
-					($schema === null) ? " (try providing a schema to ".__FUNCTION__." so I can look harder)" : ''
+					(($schema === null) ? " (try providing a schema to ".__FUNCTION__." so I can look harder)" : '')
 				);
 			}
 			$targetRc = $schema->getResourceClass($ref->getTargetClassName());
