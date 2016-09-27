@@ -74,6 +74,9 @@ class EarthIT_Storage_PostgresSQLGenerator implements EarthIT_Storage_SQLGenerat
 		} else if( self::valuesOfTypeShouldBeSelectedAsGeoJson($f->getType()) or self::valuesOfTypeShouldBeSelectedAsJson($f->getType()) ) {
 			return EarthIT_JSON::prettyEncode($v);
 		} else {
+			if( ($phpType = $f->getType()->getPhpTypeName()) ) {
+				return EarthIT_Storage_Util::cast($v, $phpType);
+			}
 			return $v;
 		}
 	}
