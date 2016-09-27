@@ -215,7 +215,7 @@ class EarthIT_Storage_ItemFilters
 		}
 		
 		$field = self::findField($fieldName, $rc, $fuzzyMatch);
-		if( $field === null ) throw new Exception("Error while parsing filter; as '{$fieldName}'");
+		if( $field === null ) throw new Exception("Error while parsing filter; unknown field '{$fieldName}'");
 		
 		if( is_scalar($pattern) ) {
 			$patternParts = explode(':', $pattern, 2);
