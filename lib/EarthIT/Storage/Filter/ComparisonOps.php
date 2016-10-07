@@ -13,6 +13,12 @@ class EarthIT_Storage_Filter_ComparisonOps
 		return self::$exactMatch;
 	}
 	
+	protected static $exactMatch2;
+	public static function exactMatch2() {
+		if( self::$exactMatch2 === null ) self::$exactMatch2 = self::infix('===','IS');
+		return self::$exactMatch2;
+	}
+	
 	public static function get($scheme) {
 		switch($scheme) {
 		case 'eq': return self::exactMatch();

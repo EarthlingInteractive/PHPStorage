@@ -35,6 +35,17 @@ class EarthIT_Storage_ItemFiltersTest extends EarthIT_Storage_TestCase
 		$this->assertTrue( $caught, "non-fuzzy parsing with 'userName' field should have failed" );
 	}
 	
+	public function testParseIsNotNullFilter() {
+		$userRc = $this->registry->schema->getResourceClass('user');
+		$filter = EarthIT_Storage_ItemFilters::parseMulti( array('e-mail address'=>'not:is:null'), $userRc, null, true );
+		$PB = new EarthIT_DBC_ParamsBuilder();
+		$sql = $filter->toSql( "u", $this->registry->dbObjectNamer, $PB);
+		$PB->getParams();
+		$this->assertEquals("(u.{v_0} IS NULL) = false", $sql);
+		$this->assertTrue( $filter->matches(array('e-mail address'=>'frodo@baggins.net')) );
+		$this->assertFalse( $filter->matches(array('e-mail address'=>null)) );
+	}
+	
 	public function testZeroLengthInFilter() {
 		$userRc = $this->registry->schema->getResourceClass('user');
 		

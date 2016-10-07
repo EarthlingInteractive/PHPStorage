@@ -55,6 +55,14 @@ class EarthIT_Storage_ItemFilters
 			// Oh look this is kind of a silly way to do it:
 			$toBeNegated = self::parsePattern( $field->getName(), $pattern, $rc );
 			return new EarthIT_Storage_Filter_NegatedItemFilter($toBeNegated);
+		case 'is':
+			if( $pattern === 'null' ) {
+				$comparisonOp = EarthIT_Storage_Filter_ComparisonOps::exactMatch2();
+				$vExp = EarthIT_Storage_Filter_NullValueExpression::getInstance();
+			} else {
+				throw new Exception("'is:' operator only supports 'null' pattern; given: ".var_export($pattern,true));
+			}
+			break;
 		case 'eq':
 			$value = EarthIT_Storage_Util::cast($pattern, $field->getType()->getPhpTypeName());
 			return new EarthIT_Storage_Filter_ExactMatchFieldValueFilter($field, $rc, $value);
