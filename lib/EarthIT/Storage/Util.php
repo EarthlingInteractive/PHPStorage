@@ -140,7 +140,7 @@ class EarthIT_Storage_Util
 	public static function itemIdToFieldValues( $id, EarthIT_Schema_ResourceClass $rc ) {
 		$idRegex = self::itemIdRegex( $rc, true );
 		if( !preg_match('/'.$idRegex.'/', $id, $bif) ) {
-			throw new Exception("ID did not match regex /^$idRegex\$/: $id");
+			throw new Exception("ID did not match regex /$idRegex/: $id");
 		}
 		
 		$idFieldValues = array();
