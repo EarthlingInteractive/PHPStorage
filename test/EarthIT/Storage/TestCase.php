@@ -7,4 +7,8 @@ abstract class EarthIT_Storage_TestCase extends PHPUnit_Framework_TestCase
 		global $EarthIT_Storage_TestRegistry;
 		$this->registry = $EarthIT_Storage_TestRegistry;
 	}
+	
+	protected function rc($name) {
+		return $this->registry->schema->getResourceClass($name);
+	}
 }

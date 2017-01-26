@@ -61,7 +61,14 @@ class EarthIT_Storage_Util
 		return $item;
 	}
 	
-	public static function itemIdRegex( EarthIT_Schema_ResourceClass $rc ) {
+	/**
+	 * @api
+	 * 
+	 * Return a regex that can be used to find or match a stringified ID.
+	 * If $includeEndAnchors, '^' and '$' are included.
+	 * This also allows the regex to contain up to one (.*) segment.
+	 */
+	public static function itemIdRegex( EarthIT_Schema_ResourceClass $rc, $includeEndAnchors=false ) {
 		$pk = $rc->getPrimaryKey();
 		if( $pk === null or count($pk->getFieldNames()) == 0 ) {
 			throw new Exception("No ID regex because no primary key for ".$rc->getName().".");
@@ -69,16 +76,35 @@ class EarthIT_Storage_Util
 		
 		$fields = $rc->getFields();
 		$parts = array();
+		$unpatternedFieldNames = array();
 		foreach( $pk->getFieldNames() as $fn ) {
 			$field = $fields[$fn];
 			$datatype = $field->getType();
 			$fRegex = $datatype->getRegex();
 			if( $fRegex === null ) {
-				throw new Exception("Can't build ID regex because ID component field '$fn' is of type '".$datatype->getName()."', which doesn't have a regex.");
+				$unpatternedFieldNames[] = $fn;
+				$fRegex = '.*';
 			}
 			$parts[] = "($fRegex)";
 		}
-		return implode("-", $parts);
+		
+		$regex = implode('-', $parts);
+		if( $includeEndAnchors ) {
+			if( count($unpatternedFieldNames) > 1 ) {
+				throw new Exception(
+					"Can't build end-anchored ID regex because more than one ID component ".
+					"field lacks a regex: ".implode(', ',$unpatternedFieldNames));
+			}
+			return '^'.$regex.'$';
+		} else {
+			if( count($unpatternedFieldNames) > 0 ) {
+				throw new Exception(
+					"Can't build unanchored ID regex because some ID component ".
+					"fields lacks a regex: ".implode(', ',$unpatternedFieldNames));
+			}
+			
+			return implode("-", $parts);
+		}
 	}
 	
 	/**
@@ -112,8 +138,8 @@ class EarthIT_Storage_Util
 	 * return array of field name => field value for the primary key fields encoded in $id
 	 */
 	public static function itemIdToFieldValues( $id, EarthIT_Schema_ResourceClass $rc ) {
-		$idRegex = self::itemIdRegex( $rc );
-		if( !preg_match('/^'.$idRegex.'$/', $id, $bif) ) {
+		$idRegex = self::itemIdRegex( $rc, true );
+		if( !preg_match('/'.$idRegex.'/', $id, $bif) ) {
 			throw new Exception("ID did not match regex /^$idRegex\$/: $id");
 		}
 		

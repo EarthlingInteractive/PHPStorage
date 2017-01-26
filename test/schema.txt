@@ -95,3 +95,17 @@ class 'computation' : SRC : members are public {
 	status : reference(computation status) = status code
 	result : string : nullable
 }
+
+class 'thing with arbitrary string in primary key' {
+	text0 : hash : key(primary)
+	text1 : string : key(primary)
+	text2 : hash : key(primary)
+	notes : string
+}
+
+class 'thing with multiple arbitrary strings in primary key' {
+	text0 : hash : key(primary)
+	text1 : string : key(primary)
+	text2 : string : key(primary)
+	notes : string
+}
