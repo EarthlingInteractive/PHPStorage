@@ -131,21 +131,6 @@ class EarthIT_Storage_TestRegistry
 		return $repos;
 	}
 	
-	protected function loadN2rServer() {
-		$repos = array();
-		foreach( $this->getBlobRepositoryDirs() as $rd ) {
-			$repos[] = new TOGoS_PHPN2R_FSSHA1Repository($rd);
-		}
-		return new TOGoS_PHPN2R_Server($repos);
-	}
-
-	protected function loadPrimaryBlobRepository() {
-		foreach( $this->getBlobRepositoryDirs() as $rd ) {
-			return new TOGoS_PHPN2R_FSSHA1Repository($rd);
-		}
-		throw new Exception("No local repositories configured.");
-	}
-	
 	protected function getViewTemplateDirectory() {
 		return EarthIT_Storage_ROOT_DIR.'/views';
 	}

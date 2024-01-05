@@ -3,16 +3,15 @@
 	"description": "PHP Storage",
 	"license": "MIT",
 	"require-dev": {
-		"doctrine/dbal": "^2.4",
+		"doctrine/dbal": "^3.7.2",
 		"earthit/php-project-utils": "^0.0.12",
-		"earthit/schema": "^1.0.1",
-		"phpunit/phpunit": "~3.7",
-		"togos/tpfetcher": "^0.0.7"
+		"earthit/schema": "^2.0.1",
+		"phpunit/phpunit": "~10.5.5"
 	},
 	"require": {
-		"php": ">=5.3",
-		"earthit/dbc": "^1.3.0",
-		"earthit/php-common": "^1.1.0"
+		"php": ">=8.1",
+		"earthit/dbc": "^2.0.0",
+		"earthit/php-common": "^2.0.1"
 	},
 	"autoload": {
 		"psr-0": {

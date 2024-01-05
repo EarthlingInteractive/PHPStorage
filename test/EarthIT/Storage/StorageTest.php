@@ -15,7 +15,7 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 		return $keyed;
 	}
 	
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 		$this->storage = $this->makeStorage();
 	}

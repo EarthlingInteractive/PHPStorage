@@ -2,7 +2,7 @@
 
 class EarthIT_Storage_PostgresStorageTest extends EarthIT_Storage_StorageTest
 {
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 		$this->storageHelper = $this->registry->postgresStorageHelper;
 	}
