@@ -10,8 +10,8 @@ class EarthIT_Storage_Search
 	
 	public function __construct(
 		EarthIT_Schema_ResourceClass $rc,
-		EarthIT_Storage_ItemFilter $filter=null,
-		EarthIT_Storage_Comparator $comparator=null,
+		EarthIT_Storage_ItemFilter|null $filter=null,
+		EarthIT_Storage_Comparator|null $comparator=null,
 		$skip=0,
 		$limit=null
 	) {

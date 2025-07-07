@@ -106,7 +106,7 @@ class EarthIT_Storage_ItemFilters
 	}
 	
 	protected static function findReference(
-		$refRef, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema $schema=null,
+		$refRef, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema|null $schema=null,
 		&$refName=null, &$refIsPlural=null, $fuzzyMatch=true
 	) {
 		$refRef = self::maybeMinimize($refRef, $fuzzyMatch);
@@ -200,7 +200,7 @@ class EarthIT_Storage_ItemFilters
 		}
 	}
 	
-	public static function parsePattern( $fieldName, $pattern, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema $schema=null, $fuzzyMatch=false ) {
+	public static function parsePattern( $fieldName, $pattern, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema|null $schema=null, $fuzzyMatch=false ) {
 		$fieldNameParts = explode('.', $fieldName, 2);
 		if( count($fieldNameParts) > 1 ) {
 			if( $schema === null ) throw new Exception("Can't parse sub-item filter '{$fieldName}' because no \$schema provided.");
@@ -245,7 +245,7 @@ class EarthIT_Storage_ItemFilters
 	}
 	
 	// TODO: What's nameMap?  Maybe remove it?
-	public static function parse( $filterString, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema $schema=null, $fuzzyMatch=false ) {
+	public static function parse( $filterString, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema|null $schema=null, $fuzzyMatch=false ) {
 		if( $filterString instanceof EarthIT_Storage_ItemFilter ) return $filterString;
 		
 		$p = explode('=', $filterString, 2);
@@ -256,7 +256,7 @@ class EarthIT_Storage_ItemFilters
 	/**
 	 * TODO: Document how different stuffs get parsed.
 	 */
-	public static function parseMulti( $filters, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema $schema=null, $fuzzyMatch=false ) {
+	public static function parseMulti( $filters, EarthIT_Schema_ResourceClass $rc, EarthIT_Schema|null $schema=null, $fuzzyMatch=false ) {
 		if( $filters === '' ) return self::emptyFilter();
 		if( $filters instanceof EarthIT_Storage_ItemFilter ) return $filters;
 		

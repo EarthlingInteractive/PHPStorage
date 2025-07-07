@@ -6,7 +6,7 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 	
 	protected $storage;
 	
-	protected static function keyById(array $things, EarthIT_Schema_ResourceClass $rc=null) {
+	protected static function keyById(array $things, EarthIT_Schema_ResourceClass|null $rc=null) {
 		$keyed = array();
 		foreach( $things as $t ) {
 			$id = $rc === null ? $t['ID'] : EarthIT_Storage_Util::itemId($t, $rc);
@@ -110,24 +110,24 @@ abstract class EarthIT_Storage_StorageTest extends EarthIT_Storage_TestCase
 
 	public function testPatchNothing() {
 		$userRc = $this->registry->schema->getResourceClass('user');
-		
+
 		$newUsers = $this->storage->saveItems( array(
 			array('username' => 'Bob Hope', 'passhash' => 'asd123'),
 			array('username' => 'Bob Jones', 'passhash' => 'asd125'),
 		), $userRc, array(EarthIT_Storage_ItemSaver::RETURN_SAVED=>true));
-		
+
 		$userUpdates = array();
 		foreach( $newUsers as $newUser ) {
 			$userUpdates[] = array('ID'=>$newUser['ID']);
 		}
-		
+
 		$updatedUsers = $this->storage->saveItems(
 			$userUpdates, $userRc,
 			array(
 				EarthIT_Storage_ItemSaver::RETURN_SAVED => true,
 				EarthIT_Storage_ItemSaver::ON_DUPLICATE_KEY => EarthIT_Storage_ItemSaver::ODK_UPDATE)
 		);
-		
+
 		// That shouldn't have changed anything, and it shouldn't've caused a crash
 	}
 	

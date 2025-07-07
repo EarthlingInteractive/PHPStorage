@@ -4,8 +4,8 @@
 	"license": "MIT",
 	"require-dev": {
 		"doctrine/dbal": "^3.7.2",
-		"earthit/php-project-utils": "^0.0.12",
-		"earthit/schema": "^2.0.1",
+		"earthit/php-project-utils": "^0.2.12",
+		"earthit/schema": "^2.1.0",
 		"phpunit/phpunit": "~10.5.5",
 		"togos/tpfetcher": "^0.0.7"
 	},
